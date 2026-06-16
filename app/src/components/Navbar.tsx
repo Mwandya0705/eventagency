@@ -15,10 +15,10 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 px-6 md:px-12 py-5">
-      <div className="flex items-center justify-between">
-        {/* Left nav links */}
-        <div className="hidden md:flex flex-1 items-center justify-between pr-16">
-          {navLinks.slice(0, 2).map((link) => (
+      <div className="relative flex items-center">
+        {/* Desktop nav links — evenly spread across the full width */}
+        <div className="hidden md:flex w-full items-center justify-between">
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -26,7 +26,8 @@ export default function Navbar() {
                 path === link.href ? 'text-white opacity-100' : 'text-white opacity-90'
               }`}
             >
-              {link.label} <span className="text-gray-light text-xs">{link.sub}</span>
+              {link.label}
+              {link.sub && <span className="text-gray-light text-xs"> {link.sub}</span>}
             </Link>
           ))}
         </div>
@@ -47,21 +48,6 @@ export default function Navbar() {
             />
           </svg>
         </Link>
-
-        {/* Right nav links */}
-        <div className="hidden md:flex flex-1 items-center justify-between pl-16">
-          {navLinks.slice(2).map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm font-medium tracking-wide transition-opacity duration-200 hover:opacity-100 ${
-                path === link.href ? 'text-white opacity-100' : 'text-white opacity-90'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
 
         {/* Mobile menu button */}
         <button className="md:hidden text-white ml-auto">
