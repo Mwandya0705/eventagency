@@ -1,0 +1,173 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 53%;
+    --accent: 227 100% 61%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 16%;
+    --input: 0 0% 10%;
+    --ring: 227 100% 61%;
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-black text-white;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  * {
+    @apply border-border;
+  }
+}
+
+@layer components {
+  .font-display {
+    font-family: 'Oswald', sans-serif;
+  }
+
+  .card-stack-wrapper {
+    position: relative;
+    --card-height: 100vh;
+  }
+
+  .card-stack-inner {
+    position: sticky;
+    top: 0;
+    height: var(--card-height);
+    overflow: hidden;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+
+  .card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: var(--card-height);
+    will-change: transform;
+    transform-origin: 50% 0%;
+    transform: translateY(var(--y, 0)) rotateX(var(--r, 0));
+    overflow: hidden;
+  }
+
+  .card__img {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+    transform: scale(1.4);
+  }
+
+  .card__caption {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 48px;
+    z-index: 10;
+  }
+
+  .card__title {
+    font-family: 'Oswald', sans-serif;
+    font-size: 8vw;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: white;
+    text-shadow: 0 2px 40px rgba(0,0,0,0.5);
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+  }
+
+  .card__category {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.8);
+    text-shadow: 0 1px 20px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    padding-bottom: 8px;
+  }
+
+  .card__year {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.8);
+    text-shadow: 0 1px 20px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    padding-bottom: 8px;
+  }
+
+  .orb {
+    position: absolute;
+    will-change: transform;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 50%;
+  }
+
+  .orb--1 {
+    width: 50vw;
+    height: 50vw;
+    top: -25vw;
+    left: -25vw;
+    background: radial-gradient(circle, rgba(59,91,255,0.15) 0%, transparent 70%);
+  }
+
+  .orb--2 {
+    width: 30vw;
+    height: 30vw;
+    bottom: -15vw;
+    right: -15vw;
+    background: radial-gradient(circle, rgba(59,91,255,0.1) 0%, transparent 70%);
+  }
+
+  @keyframes glow {
+    0%, 100% { filter: brightness(100%); }
+    50% { filter: brightness(300%); }
+  }
+
+  .text-glow {
+    animation: glow 3s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (max-width: 768px) {
+  .card__title {
+    font-size: 14vw;
+  }
+  .card__caption {
+    padding: 0 24px;
+    bottom: 100px;
+  }
+}
