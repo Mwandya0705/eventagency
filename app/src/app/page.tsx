@@ -145,7 +145,11 @@ export default function Home() {
           <div className="absolute inset-0 z-20 pointer-events-none">
             <div className="absolute inset-0 bg-black/25" />
 
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center px-6">
+            {/* Center brand label: only while the cover photo shows, gone once the video plays */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center px-6 transition-opacity duration-500 ease-out"
+              style={{ opacity: coverVisible ? 1 : 0 }}
+            >
               <h1 className="font-display text-[16vw] md:text-[9vw] font-bold uppercase text-white leading-[0.85] drop-shadow-[0_4px_40px_rgba(0,0,0,0.6)]">
                 {brands[active].name}
               </h1>
