@@ -35,7 +35,6 @@ export default function Home() {
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
-  const fillRefs = useRef<(HTMLDivElement | null)[]>([])
   const activeRef = useRef(0)
 
   // Preload cover images so the splash hands off cleanly.
@@ -98,25 +97,6 @@ export default function Home() {
     }, COVER_HOLD_MS)
     return () => clearTimeout(timer)
   }, [active, loaded])
-
-  // The blue strip fills as the active brand's video plays.
-  useEffect(() => {
-    if (!loaded) return
-    let raf = 0
-    const tick = () => {
-      const idx = activeRef.current
-      const v = videoRefs.current[idx]
-      const playProgress = v && v.duration ? v.currentTime / v.duration : 0
-      fillRefs.current.forEach((f, j) => {
-        if (!f) return
-        const fill = j < idx ? 1 : j === idx ? playProgress : 0
-        f.style.transform = `scaleX(${fill})`
-      })
-      raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [loaded])
 
   return (
     <>
@@ -190,11 +170,8 @@ export default function Home() {
                 className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
               >
                 <div
-                  ref={(el) => {
-                    fillRefs.current[j] = el
-                  }}
-                  className="absolute inset-0 origin-left bg-blue-accent"
-                  style={{ transform: 'scaleX(0)' }}
+                  className="absolute inset-0 origin-left bg-blue-accent transition-transform duration-500 ease-out"
+                  style={{ transform: j === active ? 'scaleX(1)' : 'scaleX(0)' }}
                 />
               </div>
             ))}
