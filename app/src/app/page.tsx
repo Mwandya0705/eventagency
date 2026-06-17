@@ -8,7 +8,20 @@ import ProjectView, { type Brand } from '@/components/ProjectView'
 
 // Sequence: Mercedes → BMW → Lamborghini → Ferrari → Tesla → Toyota
 const brands: Brand[] = [
-  { name: 'Mercedes-Benz', category: 'Luxury Sedan', year: '2025', cover: '/images/mercedes-benz-cover.png', video: '/videos/mercedes.mp4' },
+  {
+    name: 'Mercedes-Benz',
+    category: 'Luxury Sedan',
+    year: '2025',
+    cover: '/images/mercedes-benz-cover.png',
+    video: '/videos/mercedes.mp4',
+    videos: [
+      { src: '/videos/mercedes-amg-gt-2024.mp4', title: '2024 AMG GT Commercial' },
+      { src: '/videos/mercedes-amg-drift.mp4', title: 'The Drift of a Lifetime' },
+      { src: '/videos/mercedes-s-class-2021.mp4', title: 'The 2021 S-Class' },
+      { src: '/videos/mercedes-g-class.mp4', title: 'The G-Class Experience' },
+      { src: '/videos/mercedes-cls-trailer.mp4', title: 'CLS 2018 Premiere Trailer' },
+    ],
+  },
   { name: 'BMW', category: 'Sport Series', year: '2025', cover: '/images/bmw-cover.png', video: '/videos/bmw.mp4' },
   { name: 'Lamborghini', category: 'Supercar', year: '2025', cover: '/images/lamborghini-cover.png', video: '/videos/lamborghini.mp4' },
   { name: 'Ferrari', category: 'Grand Tourer', year: '2025', cover: '/images/ferrari-cover.png', video: '/videos/ferari.mp4' },

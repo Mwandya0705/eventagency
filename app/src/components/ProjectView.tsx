@@ -2,13 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+export interface Clip {
+  src: string
+  title: string
+}
+
 export interface Brand {
   name: string
   category: string
   year: string
   cover: string
   video: string
-  videos?: string[]
+  videos?: Clip[]
 }
 
 interface ProjectViewProps {
@@ -29,7 +34,7 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
     if (index === null) return
     setCurrent(index)
     const b = brands[index]
-    setSelectedVideo(b.videos?.[0] ?? b.video)
+    setSelectedVideo(b.videos?.[0]?.src ?? b.video)
   }, [index, brands])
 
   // Play the selected clip with sound while open; pause when closed.
@@ -46,7 +51,9 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
   }, [open, selectedVideo])
 
   const brand = brands[current]
-  const clips = brand.videos?.length ? brand.videos : [brand.video]
+  const clips: Clip[] = brand.videos?.length
+    ? brand.videos
+    : [{ src: brand.video, title: brand.name }]
   const hasPrev = current > 0
   const hasNext = current < brands.length - 1
 
@@ -121,22 +128,33 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
       )}
 
       {/* Clip playlist (bottom-right) */}
-      <div className="absolute right-5 md:right-6 bottom-24 z-20 flex flex-col gap-3 max-h-[55vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
+      <div className="absolute right-5 md:right-6 bottom-24 z-20 flex flex-col items-end gap-3 max-h-[58vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
         <span className="text-white/50 text-[10px] uppercase tracking-[0.25em] text-right">Films</span>
         {clips.map((clip, i) => (
           <button
-            key={clip + i}
-            onClick={() => setSelectedVideo(clip)}
-            className={`relative w-24 md:w-32 aspect-video rounded-md overflow-hidden border transition-colors ${
-              selectedVideo === clip ? 'border-blue-accent' : 'border-white/20 hover:border-white/50'
-            }`}
+            key={clip.src + i}
+            onClick={() => setSelectedVideo(clip.src)}
+            className="group flex items-center gap-2 text-right"
           >
-            <video src={clip} muted playsInline preload="metadata" className="w-full h-full object-cover" />
             <span
-              className={`absolute inset-0 transition-colors ${
-                selectedVideo === clip ? 'bg-blue-accent/10' : 'bg-black/30'
+              className={`hidden md:block max-w-[140px] truncate text-xs transition-colors ${
+                selectedVideo === clip.src ? 'text-white' : 'text-white/50 group-hover:text-white/80'
               }`}
-            />
+            >
+              {clip.title}
+            </span>
+            <span
+              className={`relative w-24 md:w-32 aspect-video rounded-md overflow-hidden border transition-colors ${
+                selectedVideo === clip.src ? 'border-blue-accent' : 'border-white/20 group-hover:border-white/50'
+              }`}
+            >
+              <video src={clip.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+              <span
+                className={`absolute inset-0 transition-colors ${
+                  selectedVideo === clip.src ? 'bg-blue-accent/10' : 'bg-black/30'
+                }`}
+              />
+            </span>
           </button>
         ))}
       </div>
