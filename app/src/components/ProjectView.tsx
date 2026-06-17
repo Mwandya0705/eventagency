@@ -7,6 +7,28 @@ export interface Clip {
   title: string
 }
 
+// Thumbnail video: many clips open on a black frame, so seek a couple seconds
+// in once metadata loads to show a representative frame instead of black.
+function ClipThumb({ src }: { src: string }) {
+  return (
+    <video
+      src={src}
+      muted
+      playsInline
+      preload="metadata"
+      onLoadedMetadata={(e) => {
+        const v = e.currentTarget
+        try {
+          v.currentTime = Math.min(2.5, Math.max(0.5, (v.duration || 5) * 0.15))
+        } catch {
+          /* seeking not ready yet – ignore */
+        }
+      }}
+      className="w-full h-full object-cover"
+    />
+  )
+}
+
 export interface Brand {
   name: string
   category: string
@@ -152,7 +174,7 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
                   selectedVideo === clip.src ? 'border-blue-accent' : 'border-white/20 group-hover:border-white/50'
                 }`}
               >
-                <video src={clip.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                <ClipThumb src={clip.src} />
                 <span
                   className={`absolute inset-0 transition-colors ${
                     selectedVideo === clip.src ? 'bg-blue-accent/10' : 'bg-black/30'
