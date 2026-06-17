@@ -4,14 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import LoadingScreen from '@/components/LoadingScreen'
-
-interface Brand {
-  name: string
-  category: string
-  year: string
-  cover: string
-  video: string
-}
+import ProjectView, { type Brand } from '@/components/ProjectView'
 
 // Sequence: Mercedes → BMW → Lamborghini → Ferrari → Tesla → Toyota
 const brands: Brand[] = [
@@ -26,16 +19,26 @@ const brands: Brand[] = [
 const N = brands.length
 // How long the cover photo is shown before the video autoplays.
 const COVER_HOLD_MS = 1100
+// Top/bottom bands of the screen read as "Scroll"; the middle reads as "View Project".
+const SCROLL_BAND = 0.3
 
 export default function Home() {
   const [loaded, setLoaded] = useState(false)
   const [imagesReady, setImagesReady] = useState(false)
   const [active, setActive] = useState(0)
   const [coverVisible, setCoverVisible] = useState(true)
+  const [project, setProject] = useState<number | null>(null)
+  const [cursorActive, setCursorActive] = useState(false)
+  const [cursorMode, setCursorMode] = useState<'view' | 'scroll'>('view')
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
   const activeRef = useRef(0)
+  const projectRef = useRef<number | null>(null)
+  projectRef.current = project
+  const cursorRef = useRef<HTMLDivElement>(null)
+  const cursorModeRef = useRef<'view' | 'scroll'>('view')
+  const cursorActiveRef = useRef(false)
 
   // Preload cover images so the splash hands off cleanly.
   useEffect(() => {
@@ -64,7 +67,6 @@ export default function Home() {
         const idx = Math.max(0, Math.min(N - 1, Math.round(el.scrollTop / el.clientHeight)))
         if (idx !== activeRef.current) {
           activeRef.current = idx
-          // Show the new brand's cover immediately (before its video autoplays).
           setCoverVisible(true)
           setActive(idx)
         }
@@ -89,6 +91,7 @@ export default function Home() {
     setCoverVisible(true)
     const timer = setTimeout(() => {
       setCoverVisible(false)
+      if (projectRef.current !== null) return
       const v = videoRefs.current[active]
       if (v) {
         v.currentTime = 0
@@ -98,97 +101,196 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [active, loaded])
 
+  // Pause the landing video while a project is open; resume on return.
+  useEffect(() => {
+    const v = videoRefs.current[active]
+    if (!v) return
+    if (project !== null) {
+      v.pause()
+    } else if (!coverVisible) {
+      v.play().catch(() => {})
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [project])
+
+  // Custom cursor: "View Project" in the middle, "Scroll" near top/bottom.
+  const handleStageMouseMove = (e: React.MouseEvent) => {
+    const yr = e.clientY / window.innerHeight
+    const mode: 'view' | 'scroll' = yr < SCROLL_BAND || yr > 1 - SCROLL_BAND ? 'scroll' : 'view'
+    if (cursorRef.current) {
+      cursorRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`
+    }
+    if (cursorModeRef.current !== mode) {
+      cursorModeRef.current = mode
+      setCursorMode(mode)
+    }
+    if (!cursorActiveRef.current) {
+      cursorActiveRef.current = true
+      setCursorActive(true)
+    }
+  }
+
+  const hideCursor = () => {
+    cursorActiveRef.current = false
+    setCursorActive(false)
+  }
+
+  const handleStageClick = () => {
+    if (cursorModeRef.current === 'view') {
+      setProject(activeRef.current)
+    }
+  }
+
   return (
     <>
       {!loaded && (
         <LoadingScreen ready={imagesReady} onComplete={() => setLoaded(true)} />
       )}
 
-      <Navbar />
-
+      {/* Landing — slides left when a project opens */}
       <div
-        ref={scrollRef}
-        data-lenis-prevent
-        className="relative h-screen w-screen overflow-y-scroll snap-y snap-mandatory bg-black [&::-webkit-scrollbar]:hidden"
-        style={{ scrollbarWidth: 'none' }}
+        className="transition-transform duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]"
+        style={{ transform: project !== null ? 'translateX(-100%)' : 'translateX(0)' }}
       >
-        {/* Pinned stage — stays in place while the brand swaps */}
-        <div className="fixed inset-0 z-10 overflow-hidden">
-          {brands.map((b, i) => (
-            <div
-              key={b.name}
-              className="absolute inset-0 transition-opacity duration-700 ease-out"
-              style={{ opacity: i === active ? 1 : 0, zIndex: i === active ? 2 : 1 }}
-            >
-              <video
-                ref={(el) => {
-                  videoRefs.current[i] = el
-                }}
-                src={b.video}
-                muted
-                playsInline
-                preload="metadata"
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              {/* Cover photo shown first, then fades to reveal the video */}
-              <div
-                className="absolute inset-0 bg-cover bg-center transition-opacity duration-700 ease-out"
-                style={{
-                  backgroundImage: `url(${b.cover})`,
-                  opacity: i === active && coverVisible ? 1 : 0,
-                }}
-              />
-            </div>
-          ))}
+        <div
+          className={`transition-opacity duration-300 ${
+            project !== null ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <Navbar />
+        </div>
 
-          {/* Foreground overlay */}
-          <div className="absolute inset-0 z-20 pointer-events-none">
-            <div className="absolute inset-0 bg-black/25" />
-
-            {/* Center brand label: only while the cover photo shows, gone once the video plays */}
-            <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center px-6 transition-opacity duration-500 ease-out"
-              style={{ opacity: coverVisible ? 1 : 0 }}
-            >
-              <h1 className="font-display text-[16vw] md:text-[9vw] font-bold uppercase text-white leading-[0.85] drop-shadow-[0_4px_40px_rgba(0,0,0,0.6)]">
-                {brands[active].name}
-              </h1>
-              <div className="mt-4 flex items-center justify-center gap-2 text-white/70 text-[10px] md:text-xs uppercase tracking-[0.35em]">
-                <span className="text-base leading-none">⇅</span> Scroll
-              </div>
-            </div>
-
-            <span className="absolute bottom-24 left-6 md:left-12 text-white/80 text-sm md:text-base">
-              {brands[active].category}
-            </span>
-            <span className="absolute bottom-24 right-6 md:right-12 text-white/80 text-sm md:text-base tabular-nums">
-              {brands[active].year}
-            </span>
-          </div>
-
-          {/* Segmented progress strips */}
-          <div className="absolute bottom-14 left-6 right-6 md:left-12 md:right-12 z-30 flex gap-2">
-            {brands.map((b, j) => (
+        <div
+          ref={scrollRef}
+          data-lenis-prevent
+          onMouseMove={loaded && project === null ? handleStageMouseMove : undefined}
+          onMouseLeave={hideCursor}
+          onClick={handleStageClick}
+          className="relative h-screen w-screen overflow-y-scroll snap-y snap-mandatory bg-black cursor-none [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {/* Pinned stage — stays in place while the brand swaps */}
+          <div className="fixed inset-0 z-10 overflow-hidden">
+            {brands.map((b, i) => (
               <div
                 key={b.name}
-                className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
+                className="absolute inset-0 transition-opacity duration-700 ease-out"
+                style={{ opacity: i === active ? 1 : 0, zIndex: i === active ? 2 : 1 }}
               >
+                <video
+                  ref={(el) => {
+                    videoRefs.current[i] = el
+                  }}
+                  src={b.video}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Cover photo shown first, then fades to reveal the video */}
                 <div
-                  className="absolute inset-0 origin-left bg-blue-accent transition-transform duration-500 ease-out"
-                  style={{ transform: j === active ? 'scaleX(1)' : 'scaleX(0)' }}
+                  className="absolute inset-0 bg-cover bg-center transition-opacity duration-700 ease-out"
+                  style={{
+                    backgroundImage: `url(${b.cover})`,
+                    opacity: i === active && coverVisible ? 1 : 0,
+                  }}
                 />
               </div>
             ))}
+
+            {/* Foreground overlay */}
+            <div className="absolute inset-0 z-20 pointer-events-none">
+              <div className="absolute inset-0 bg-black/25" />
+
+              {/* Center brand label: only while the cover photo shows */}
+              <div
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center px-6 transition-opacity duration-500 ease-out"
+                style={{ opacity: coverVisible ? 1 : 0 }}
+              >
+                <h1 className="font-display text-[16vw] md:text-[9vw] font-bold uppercase text-white leading-[0.85] drop-shadow-[0_4px_40px_rgba(0,0,0,0.6)]">
+                  {brands[active].name}
+                </h1>
+                <div className="mt-4 flex items-center justify-center gap-2 text-white/70 text-[10px] md:text-xs uppercase tracking-[0.35em]">
+                  <span className="text-base leading-none">⇅</span> Scroll
+                </div>
+              </div>
+
+              <span className="absolute bottom-24 left-6 md:left-12 text-white/80 text-sm md:text-base">
+                {brands[active].category}
+              </span>
+              <span className="absolute bottom-24 right-6 md:right-12 text-white/80 text-sm md:text-base tabular-nums">
+                {brands[active].year}
+              </span>
+            </div>
+
+            {/* Segmented progress strips (active brand = full) */}
+            <div className="absolute bottom-14 left-6 right-6 md:left-12 md:right-12 z-30 flex gap-2">
+              {brands.map((b, j) => (
+                <div
+                  key={b.name}
+                  className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
+                >
+                  <div
+                    className="absolute inset-0 origin-left bg-blue-accent transition-transform duration-500 ease-out"
+                    style={{ transform: j === active ? 'scaleX(1)' : 'scaleX(0)' }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Invisible snap anchors: one viewport of scroll per brand */}
+          {brands.map((b) => (
+            <div key={b.name} className="h-screen w-full snap-start snap-always" />
+          ))}
         </div>
 
-        {/* Invisible snap anchors: one viewport of scroll per brand */}
-        {brands.map((b) => (
-          <div key={b.name} className="h-screen w-full snap-start snap-always" />
-        ))}
+        <div
+          className={`transition-opacity duration-300 ${
+            project !== null ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
+        >
+          <Footer />
+        </div>
       </div>
 
-      <Footer />
+      {/* Custom cursor label */}
+      {loaded && project === null && (
+        <div
+          ref={cursorRef}
+          className={`fixed left-0 top-0 z-[60] pointer-events-none transition-opacity duration-200 ${
+            cursorActive ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <div className="-translate-x-1/2 -translate-y-1/2 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-white text-xs md:text-sm font-medium uppercase tracking-wider whitespace-nowrap">
+            {cursorMode === 'view' ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                View Project
+              </>
+            ) : (
+              <>
+                <svg width="14" height="18" viewBox="0 0 16 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="2" width="10" height="20" rx="5" />
+                  <line x1="8" y1="6" x2="8" y2="10" />
+                </svg>
+                Scroll
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Project view — slides in from the right */}
+      <ProjectView
+        brands={brands}
+        index={project}
+        onClose={() => setProject(null)}
+        onNavigate={(i) => setProject(i)}
+      />
     </>
   )
 }
