@@ -100,34 +100,40 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
       {/* Top gradient for legibility */}
       <div className="absolute top-0 inset-x-0 h-28 bg-gradient-to-b from-black/70 to-transparent pointer-events-none z-10" />
 
-      {/* Back to landing */}
-      <button
-        onClick={onClose}
-        className="absolute top-5 left-6 z-20 flex items-center gap-2 text-white/80 hover:text-white text-xs uppercase tracking-[0.25em] transition-colors"
-      >
-        <span className="text-2xl leading-none">←</span> Back
-      </button>
-
-      {/* Project title */}
-      <div className="absolute top-5 left-1/2 -translate-x-1/2 z-20 text-center pointer-events-none">
-        <h2 className="font-display text-lg md:text-2xl font-bold uppercase text-white tracking-wide leading-none">
-          {brand.name}
-        </h2>
-        <p className="text-white/60 text-[11px] md:text-sm mt-1">
-          {brand.category} · {brand.year}
-        </p>
-      </div>
-
-      {/* Next project (top-right) */}
-      {hasNext && (
+      {/* Top bar: Back · Title · Next, grouped around the center so the
+          native video controls in the corners stay clear and visible. */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 md:gap-8 px-4">
+        {/* Back to landing (left of the title) */}
         <button
-          onClick={() => onNavigate(current + 1)}
-          className="absolute top-5 right-6 z-20 text-right text-white/80 hover:text-white transition-colors"
+          onClick={onClose}
+          className="flex min-w-[64px] md:min-w-[120px] items-center gap-1.5 text-white/80 hover:text-white text-[10px] md:text-xs uppercase tracking-[0.2em] transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
         >
-          <div className="text-[10px] uppercase tracking-[0.25em] text-white/50">Next Project</div>
-          <div className="text-sm md:text-base">{brands[current + 1].name} →</div>
+          <span className="text-xl leading-none">←</span> Back
         </button>
-      )}
+
+        {/* Project title */}
+        <div className="text-center pointer-events-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+          <h2 className="font-display text-base md:text-2xl font-bold uppercase text-white tracking-wide leading-none whitespace-nowrap">
+            {brand.name}
+          </h2>
+          <p className="text-white/70 text-[10px] md:text-sm mt-1 whitespace-nowrap">
+            {brand.category} · {brand.year}
+          </p>
+        </div>
+
+        {/* Next project (right of the title) */}
+        <div className="flex min-w-[64px] md:min-w-[120px] justify-end">
+          {hasNext && (
+            <button
+              onClick={() => onNavigate(current + 1)}
+              className="text-right text-white/80 hover:text-white transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+            >
+              <div className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-white/50">Next Project</div>
+              <div className="text-xs md:text-base whitespace-nowrap">{brands[current + 1].name} →</div>
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Previous / Next side arrows */}
       {hasPrev && (
