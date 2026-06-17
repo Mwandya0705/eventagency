@@ -127,36 +127,41 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
         </button>
       )}
 
-      {/* Clip playlist (bottom-right) */}
-      <div className="absolute right-5 md:right-6 bottom-24 z-20 flex flex-col items-end gap-3 max-h-[58vh] overflow-y-auto [&::-webkit-scrollbar]:hidden">
-        <span className="text-white/50 text-[10px] uppercase tracking-[0.25em] text-right">Films</span>
-        {clips.map((clip, i) => (
-          <button
-            key={clip.src + i}
-            onClick={() => setSelectedVideo(clip.src)}
-            className="group flex items-center gap-2 text-right"
-          >
-            <span
-              className={`hidden md:block max-w-[140px] truncate text-xs transition-colors ${
-                selectedVideo === clip.src ? 'text-white' : 'text-white/50 group-hover:text-white/80'
-              }`}
+      {/* Clip playlist (bottom-right): shows 3 at a time, scrollable, dims until hovered */}
+      <div className="group/rail absolute right-5 md:right-6 bottom-20 z-20 flex flex-col items-end gap-2 opacity-40 hover:opacity-100 transition-opacity duration-300">
+        <span className="text-white/50 text-[10px] uppercase tracking-[0.25em] text-right pr-1">Films</span>
+        <div
+          data-lenis-prevent
+          className="flex flex-col items-end gap-3 max-h-[14rem] md:max-h-[17rem] overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_bottom,transparent,black_9%,black_80%,transparent)] [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_9%,black_80%,transparent)]"
+        >
+          {clips.map((clip, i) => (
+            <button
+              key={clip.src + i}
+              onClick={() => setSelectedVideo(clip.src)}
+              className="group flex shrink-0 items-center gap-2 text-right"
             >
-              {clip.title}
-            </span>
-            <span
-              className={`relative w-24 md:w-32 aspect-video rounded-md overflow-hidden border transition-colors ${
-                selectedVideo === clip.src ? 'border-blue-accent' : 'border-white/20 group-hover:border-white/50'
-              }`}
-            >
-              <video src={clip.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
               <span
-                className={`absolute inset-0 transition-colors ${
-                  selectedVideo === clip.src ? 'bg-blue-accent/10' : 'bg-black/30'
+                className={`hidden md:block max-w-[140px] truncate text-xs transition-colors ${
+                  selectedVideo === clip.src ? 'text-white' : 'text-white/50 group-hover:text-white/80'
                 }`}
-              />
-            </span>
-          </button>
-        ))}
+              >
+                {clip.title}
+              </span>
+              <span
+                className={`relative w-24 md:w-32 aspect-video rounded-md overflow-hidden border transition-colors ${
+                  selectedVideo === clip.src ? 'border-blue-accent' : 'border-white/20 group-hover:border-white/50'
+                }`}
+              >
+                <video src={clip.src} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                <span
+                  className={`absolute inset-0 transition-colors ${
+                    selectedVideo === clip.src ? 'bg-blue-accent/10' : 'bg-black/30'
+                  }`}
+                />
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )
