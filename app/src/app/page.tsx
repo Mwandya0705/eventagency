@@ -96,7 +96,7 @@ const brands: Brand[] = [
 ]
 
 const N = brands.length
-const COVER_HOLD_MS = 3500
+const COVER_HOLD_MS = 6000
 const SCROLL_BAND = 0.3
 
 export default function Home() {
@@ -169,7 +169,7 @@ export default function Home() {
       if (projectRef.current !== null) return
       const v = videoRefs.current[active]
       if (v) { v.currentTime = 0; v.play().catch(() => {}) }
-    }, 500)
+    }, 3000)
 
     // Fallback: hide cover after COVER_HOLD_MS even if onPlaying hasn't fired
     const fallbackTimer = setTimeout(() => {

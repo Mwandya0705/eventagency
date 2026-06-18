@@ -103,34 +103,6 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
         onError={beginProgress}
       />
 
-      {/* === FALLBACK BRANDED SPLASH (always visible, sits behind video) === */}
-      <div
-        className="absolute inset-0 z-[0] flex flex-col items-center justify-center bg-black"
-        style={{ opacity: videoLoaded ? 0 : 1, transition: 'opacity 0.8s ease' }}
-      >
-        {/* Animated logo mark */}
-        <div className="relative flex items-center justify-center mb-8">
-          <div className="w-20 h-20 rounded-full border-2 border-white/20 flex items-center justify-center">
-            <div className="w-14 h-14 rounded-full border border-blue-accent/60 flex items-center justify-center animate-pulse">
-              <div className="w-8 h-8 rounded-full bg-blue-accent/80" />
-            </div>
-          </div>
-          {/* Orbiting dot */}
-          <div
-            className="absolute w-2 h-2 rounded-full bg-blue-accent"
-            style={{ animation: 'orbit 2s linear infinite' }}
-          />
-        </div>
-
-        <h1
-          className="font-display text-4xl md:text-6xl font-bold uppercase tracking-widest text-white"
-          style={{ letterSpacing: '0.3em' }}
-        >
-          Major
-        </h1>
-        <p className="mt-2 text-white/40 text-xs uppercase tracking-[0.4em]">Media Agency</p>
-      </div>
-
       {/* === PROGRESS BAR === */}
       <div className="absolute bottom-0 left-0 w-full z-[10]">
         <div className="relative h-7 md:h-9 w-full bg-gray-900 overflow-hidden">
@@ -143,13 +115,6 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
           </span>
         </div>
       </div>
-
-      <style>{`
-        @keyframes orbit {
-          from { transform: rotate(0deg) translateX(42px) rotate(0deg); }
-          to   { transform: rotate(360deg) translateX(42px) rotate(-360deg); }
-        }
-      `}</style>
     </div>
   )
 }
