@@ -91,9 +91,9 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
         ref={videoRef}
         key={selectedVideo || 'none'}
         src={selectedVideo || undefined}
-        poster={brand.cover}
         controls
         playsInline
+        preload="auto"
         className="absolute inset-0 w-full h-full object-contain bg-black"
       />
 
