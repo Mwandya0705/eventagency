@@ -96,7 +96,7 @@ const brands: Brand[] = [
 ]
 
 const N = brands.length
-const COVER_HOLD_MS = 3000
+const COVER_HOLD_MS = 1500
 const SCROLL_BAND = 0.3
 
 export default function Home() {
@@ -247,30 +247,43 @@ export default function Home() {
         >
           {/* Pinned stage */}
           <div className="fixed inset-0 z-10 overflow-hidden" style={{ height: '100dvh' }}>
-            {brands.map((b, i) => (
-              <div
-                key={b.name}
-                className="absolute inset-0 transition-opacity duration-700 ease-out"
-                style={{ opacity: i === active ? 1 : 0, zIndex: i === active ? 2 : 1 }}
-              >
-                <video
-                  ref={(el) => { videoRefs.current[i] = el }}
-                  src={b.video}
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="absolute inset-0 w-full h-full object-contain object-center bg-black"
-                />
-                {/* Cover photo fades to reveal video */}
+            {brands.map((b, i) => {
+              // Only give a src to the active video and the next one.
+              // All others get no src → zero network requests until needed.
+              const isActive = i === active
+              const isNext   = i === active + 1
+              const videoSrc = (isActive || isNext) ? b.video : undefined
+
+              return (
                 <div
-                  className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-opacity duration-700 ease-out"
-                  style={{
-                    backgroundImage: `url(${b.cover})`,
-                    opacity: i === active && coverVisible ? 1 : 0,
-                  }}
-                />
-              </div>
-            ))}
+                  key={b.name}
+                  className="absolute inset-0 transition-opacity duration-700 ease-out"
+                  style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
+                >
+                  {/* Cover image — always visible immediately as native <img> */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={b.cover}
+                    alt={b.name}
+                    fetchPriority={isActive ? 'high' : 'low'}
+                    decoding="async"
+                    className={`absolute inset-0 w-full h-full object-contain object-center bg-black transition-opacity duration-700 ease-out ${
+                      isActive && coverVisible ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                  {/* Video — only loaded when active or next */}
+                  <video
+                    ref={(el) => { videoRefs.current[i] = el }}
+                    src={videoSrc}
+                    muted
+                    playsInline
+                    preload={isActive ? 'auto' : 'none'}
+                    poster={b.cover}
+                    className="absolute inset-0 w-full h-full object-contain object-center bg-black"
+                  />
+                </div>
+              )
+            })}
 
             {/* Foreground overlay */}
             <div className="absolute inset-0 z-20 pointer-events-none">

@@ -7,21 +7,37 @@ export interface Clip {
   title: string
 }
 
-// Seek to a representative frame so thumbnails don't show a black frame.
+/**
+ * Lazy thumbnail — video src is only assigned once the element enters
+ * the viewport, so we don't hammer the network with 6+ parallel video
+ * requests when the rail first mounts.
+ */
 function ClipThumb({ src }: { src: string }) {
+  const ref   = useRef<HTMLVideoElement>(null)
+  const [load, setLoad] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setLoad(true); obs.disconnect() } },
+      { threshold: 0.1 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
   return (
     <video
-      src={src}
+      ref={ref}
+      src={load ? src : undefined}
       muted
       playsInline
-      preload="metadata"
+      preload={load ? 'metadata' : 'none'}
       onLoadedMetadata={(e) => {
         const v = e.currentTarget
-        try {
-          v.currentTime = Math.min(2.5, Math.max(0.5, (v.duration || 5) * 0.15))
-        } catch {
-          /* seeking not ready yet */
-        }
+        try { v.currentTime = Math.min(2.5, Math.max(0.5, (v.duration || 5) * 0.15)) }
+        catch { /* seeking not ready */ }
       }}
       className="w-full h-full object-cover"
     />
