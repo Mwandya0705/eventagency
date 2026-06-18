@@ -96,7 +96,7 @@ const brands: Brand[] = [
 ]
 
 const N = brands.length
-const COVER_HOLD_MS = 1100
+const COVER_HOLD_MS = 3000
 const SCROLL_BAND = 0.3
 
 export default function Home() {

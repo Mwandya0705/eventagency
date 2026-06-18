@@ -24,13 +24,18 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
     if (doneRef.current) return
     doneRef.current = true
     setProgress(100)
-    // Slide the whole splash UP out of view, revealing the landing beneath.
-    gsap.to(containerRef.current, {
+    // Smoothly slide the whole splash UP out of view, revealing the landing beneath.
+    const el = containerRef.current
+    if (el) el.style.willChange = 'transform'
+    gsap.to(el, {
       yPercent: -100,
-      duration: 0.9,
-      ease: 'power3.inOut',
-      delay: 0.1,
-      onComplete,
+      duration: 1.2,
+      ease: 'power2.inOut',
+      delay: 0.25,
+      onComplete: () => {
+        if (el) el.style.willChange = 'auto'
+        onComplete()
+      },
     })
   }
 
