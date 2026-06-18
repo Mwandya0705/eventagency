@@ -261,7 +261,7 @@ export default function Home() {
                   muted
                   playsInline
                   preload="metadata"
-                  className="absolute inset-0 w-full h-full object-cover"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
                 />
                 {/* Cover photo shown first, then fades to reveal the video */}
                 <div

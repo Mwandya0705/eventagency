@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import SmoothScrollProvider from '@/components/SmoothScrollProvider'
-import LargeScreenGate from '@/components/LargeScreenGate'
 
 export const metadata: Metadata = {
   title: 'Major Media Agency',
@@ -25,7 +24,6 @@ export default function RootLayout({
       </head>
       <body>
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
-        <LargeScreenGate />
       </body>
     </html>
   )

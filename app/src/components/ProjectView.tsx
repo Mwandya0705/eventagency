@@ -94,7 +94,7 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
         controls
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-contain bg-black"
+        className="absolute inset-0 w-full h-full object-cover object-center lg:object-contain bg-black"
       />
 
       {/* Top gradient for legibility */}
