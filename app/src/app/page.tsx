@@ -20,7 +20,7 @@ const brands: Brand[] = [
     videos: [
       { src: storageUrl('videos', 'mercedes-amg-gt-2024.mp4'), title: '2024 AMG GT Commercial' },
       { src: storageUrl('videos', 'mercedes-amg-drift.mp4'),   title: 'The Drift of a Lifetime' },
-      { src: storageUrl('videos', 'mercedes-s-class-2021.mp4'),title: 'The 2021 S-Class' },
+      { src: storageUrl('videos', 'mercedes-s-class-2021-compressed.mp4'), title: 'The 2021 S-Class' },
       { src: storageUrl('videos', 'mercedes-g-class.mp4'),     title: 'The G-Class Experience' },
       { src: storageUrl('videos', 'mercedes-cls-trailer.mp4'), title: 'CLS 2018 Premiere Trailer' },
     ],
@@ -51,7 +51,7 @@ const brands: Brand[] = [
       { src: storageUrl('videos', 'lambo-huracan.mp4'),       title: 'Huracán' },
       { src: storageUrl('videos', 'lambo-huracan-2.mp4'),     title: 'The Huracán' },
       { src: storageUrl('videos', 'lambo-urus.mp4'),          title: 'Urus' },
-      { src: storageUrl('videos', 'lambo-gallardo-lp560.mp4'),title: 'Gallardo LP560-4' },
+      { src: storageUrl('videos', 'lambo-gallardo-lp560-compressed.mp4'), title: 'Gallardo LP560-4' },
     ],
   },
   {
@@ -87,7 +87,7 @@ const brands: Brand[] = [
     cover: storageUrl('images', 'toyota-cover.png'),
     video: storageUrl('videos', 'toyota-cover.mp4'),
     videos: [
-      { src: storageUrl('videos', 'toyota-gr-supra.mp4'),     title: 'Toyota GR Supra' },
+      { src: storageUrl('videos', 'toyota-gr-supra-compressed.mp4'), title: 'Toyota GR Supra' },
       { src: storageUrl('videos', 'toyota-land-cruiser.mp4'), title: 'Land Cruiser' },
       { src: storageUrl('videos', 'toyota-crown.mp4'),        title: 'Toyota Crown' },
       { src: storageUrl('videos', 'toyota-tacoma.mp4'),       title: 'Toyota Tacoma' },
