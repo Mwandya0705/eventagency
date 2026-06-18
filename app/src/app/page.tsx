@@ -217,6 +217,13 @@ export default function Home() {
     }
   }
 
+  // Tap a strip segment to jump to that brand (used on phones where scrolling is awkward).
+  const goToBrand = (i: number) => {
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollTo({ top: i * el.clientHeight, behavior: 'smooth' })
+  }
+
   return (
     <>
       {!loaded && (
@@ -299,19 +306,33 @@ export default function Home() {
               </span>
             </div>
 
-            {/* Segmented progress strips (active brand = full) */}
-            <div className="absolute bottom-14 left-6 right-6 md:left-12 md:right-12 z-30 flex gap-2">
-              {brands.map((b, j) => (
-                <div
-                  key={b.name}
-                  className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-white/25"
-                >
-                  <div
-                    className="absolute inset-0 origin-left bg-blue-accent transition-transform duration-500 ease-out"
-                    style={{ transform: j === active ? 'scaleX(1)' : 'scaleX(0)' }}
-                  />
-                </div>
-              ))}
+            {/* Brand strip: top + tappable on phones (no scrolling), bottom on large screens.
+                Each segment is clickable to jump straight to that brand. */}
+            <div className="absolute z-30 left-6 right-6 md:left-12 md:right-12 top-20 bottom-auto lg:top-auto lg:bottom-14">
+              {/* Which brand is playing (small screens only) */}
+              <div className="lg:hidden mb-2 text-center text-white/80 text-[11px] uppercase tracking-[0.3em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+                {brands[active].name}
+              </div>
+              <div className="flex items-center gap-2">
+                {brands.map((b, j) => (
+                  <button
+                    key={b.name}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      goToBrand(j)
+                    }}
+                    aria-label={`Show ${b.name}`}
+                    className="group flex-1 py-2.5 lg:py-1"
+                  >
+                    <div className="relative h-[3px] w-full overflow-hidden rounded-full bg-white/25 group-hover:bg-white/40 transition-colors">
+                      <div
+                        className="absolute inset-0 origin-left bg-blue-accent transition-transform duration-500 ease-out"
+                        style={{ transform: j === active ? 'scaleX(1)' : 'scaleX(0)' }}
+                      />
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
