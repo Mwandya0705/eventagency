@@ -15,7 +15,7 @@ const brands: Brand[] = [
     name: 'Mercedes-Benz',
     category: 'Luxury Sedan',
     year: '2025',
-    cover: '/images/mercedes-benz-cover.png',
+    cover: '/images/mercedes-coverphoto.png',
     video: storageUrl('videos', 'mercedes-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'mercedes-amg-gt-2024.mp4'), title: '2024 AMG GT Commercial' },
@@ -263,17 +263,6 @@ export default function Home() {
                   className="absolute inset-0 transition-opacity duration-700 ease-out"
                   style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
                 >
-                  {/* Cover image — high priority for active brand, shows instantly */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={b.cover}
-                    alt={b.name}
-                    fetchPriority={isActive ? 'high' : 'low'}
-                    decoding="async"
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out ${
-                      isActive && coverVisible ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  />
                   {/* Video — hides cover the instant it starts playing */}
                   <video
                     ref={(el) => { videoRefs.current[i] = el }}
@@ -284,6 +273,17 @@ export default function Home() {
                     poster={b.cover}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
                     className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  {/* Cover image — high priority for active brand, shows instantly */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={b.cover}
+                    alt={b.name}
+                    fetchPriority={isActive ? 'high' : 'low'}
+                    decoding="async"
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out ${
+                      isActive && coverVisible ? 'opacity-100' : 'opacity-0'
+                    }`}
                   />
                 </div>
               )
