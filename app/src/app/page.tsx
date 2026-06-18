@@ -248,11 +248,7 @@ export default function Home() {
           {/* Pinned stage */}
           <div className="fixed inset-0 z-10 overflow-hidden" style={{ height: '100dvh' }}>
             {brands.map((b, i) => {
-              // Only give a src to the active video and the next one.
-              // All others get no src → zero network requests until needed.
               const isActive = i === active
-              const isNext   = i === active + 1
-              const videoSrc = (isActive || isNext) ? b.video : undefined
 
               return (
                 <div
@@ -260,7 +256,7 @@ export default function Home() {
                   className="absolute inset-0 transition-opacity duration-700 ease-out"
                   style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
                 >
-                  {/* Cover image — always visible immediately as native <img> */}
+                  {/* Cover image — high priority for active brand, loads instantly */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={b.cover}
@@ -271,13 +267,14 @@ export default function Home() {
                       isActive && coverVisible ? 'opacity-100' : 'opacity-0'
                     }`}
                   />
-                  {/* Video — only loaded when active or next */}
+                  {/* Cover video — ALL brands get src + preload=metadata so they buffer
+                      during the 8-second splash and play instantly when scrolled to */}
                   <video
                     ref={(el) => { videoRefs.current[i] = el }}
-                    src={videoSrc}
+                    src={b.video}
                     muted
                     playsInline
-                    preload={isActive ? 'auto' : 'none'}
+                    preload={isActive ? 'auto' : 'metadata'}
                     poster={b.cover}
                     className="absolute inset-0 w-full h-full object-contain object-center bg-black"
                   />

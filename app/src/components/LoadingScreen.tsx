@@ -2,35 +2,32 @@
 
 import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
-import { storageUrl } from '@/lib/supabase'
 
 interface LoadingScreenProps {
   onComplete: () => void
   ready?: boolean
 }
 
-// Skip the video's black intro: start at 3s, run to 10s (a 7s window).
-const SPLASH_START_S = 3
-const SPLASH_END_S = 10
-const SPLASH_DURATION_MS = (SPLASH_END_S - SPLASH_START_S) * 1000
-const SPLASH_VIDEO = storageUrl('videos', 'splashscreenvideo.mp4')
+// Hardcoded URL — never breaks even if env var is missing at build time
+const SPLASH_VIDEO =
+  'https://ggdflkchtogsssnakxsh.supabase.co/storage/v1/object/public/videos/splashscreenvideo.mp4'
+const SPLASH_DURATION_MS = 8000 // 8 seconds
 
 export default function LoadingScreen({ onComplete, ready = true }: LoadingScreenProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const readyRef = useRef(ready)
-  readyRef.current = ready
-  const doneRef = useRef(false)
-  const startedRef = useRef(false)
+  const videoRef     = useRef<HTMLVideoElement>(null)
+  const readyRef     = useRef(ready)
+  readyRef.current   = ready
+  const doneRef      = useRef(false)
+  const startedRef   = useRef(false)
 
   const [progress, setProgress] = useState(0)
-  const [started, setStarted] = useState(false)
+  const [started,  setStarted]  = useState(false)
 
   const finish = () => {
     if (doneRef.current) return
     doneRef.current = true
     setProgress(100)
-    // Bar is full → trigger the slide-up instantly (no delay); the motion itself stays smooth.
     const el = containerRef.current
     if (el) el.style.willChange = 'transform'
     gsap.to(el, {
@@ -44,61 +41,41 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
     })
   }
 
-  // The bar begins exactly when the splash video starts displaying, so they're in sync.
   const beginProgress = () => {
     if (startedRef.current) return
     startedRef.current = true
     setStarted(true)
   }
 
-  // Jump past the black intro to the 3s mark and play; if events are slow, start the bar anyway.
-  const startVideo = () => {
-    const v = videoRef.current
-    if (!v) return
-    if (v.currentTime < SPLASH_START_S) {
-      try {
-        v.currentTime = SPLASH_START_S
-      } catch {
-        /* metadata not ready yet */
-      }
-    }
-    v.play().catch(() => {})
-  }
-
+  // Try to play immediately; start bar after 1 s regardless (slow networks / mobile)
   useEffect(() => {
-    startVideo()
-    const fallbackStart = setTimeout(beginProgress, 2500)
-    return () => clearTimeout(fallbackStart)
+    videoRef.current?.play().catch(() => {})
+    const t = setTimeout(beginProgress, 1000)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Fill the bar from 0 → 100% over the splash duration, then finish.
+  // Animate progress bar over SPLASH_DURATION_MS then finish
   useEffect(() => {
     if (!started) return
     let raf = 0
-    const start = performance.now()
-
+    const t0 = performance.now()
     const tick = (now: number) => {
-      const elapsed = now - start
+      const elapsed = now - t0
       const p = Math.min(100, (elapsed / SPLASH_DURATION_MS) * 100)
       setProgress(readyRef.current ? p : Math.min(p, 99))
-
-      if (elapsed >= SPLASH_DURATION_MS && readyRef.current) {
-        finish()
-        return
-      }
+      if (elapsed >= SPLASH_DURATION_MS && readyRef.current) { finish(); return }
       raf = requestAnimationFrame(tick)
     }
-
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
-  // Safety net — never trap the user.
+  // Absolute safety net — never trap user beyond 14 s
   useEffect(() => {
-    const fallback = setTimeout(() => finish(), SPLASH_DURATION_MS + 5000)
-    return () => clearTimeout(fallback)
+    const t = setTimeout(() => finish(), SPLASH_DURATION_MS + 6000)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -107,31 +84,25 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+      className="fixed inset-0 z-[100] bg-black"
       style={{ height: '100dvh' }}
     >
-      {/* Splash video from Supabase Storage — starts at 3s to skip the black intro */}
+      {/* Splash video */}
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover"
-        src={`${SPLASH_VIDEO}#t=${SPLASH_START_S}`}
+        src={SPLASH_VIDEO}
+        autoPlay
         muted
         playsInline
         preload="auto"
-        onLoadedMetadata={startVideo}
-        onCanPlay={startVideo}
-        onPlaying={() => {
-          const v = videoRef.current
-          if (v && v.currentTime >= SPLASH_START_S - 0.1) beginProgress()
-        }}
-        onTimeUpdate={() => {
-          const v = videoRef.current
-          if (v && v.currentTime >= SPLASH_END_S) finish()
-        }}
+        onCanPlay={() => { videoRef.current?.play().catch(() => {}); beginProgress() }}
+        onPlaying={beginProgress}
+        onError={beginProgress}
       />
 
       {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 w-full">
+      <div className="absolute bottom-0 left-0 w-full z-10">
         <div className="relative h-7 md:h-9 w-full bg-gray-200 overflow-hidden">
           <div
             className="absolute inset-y-0 left-0 bg-blue-accent"
