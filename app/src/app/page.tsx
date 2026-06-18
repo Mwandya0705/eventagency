@@ -15,7 +15,7 @@ const brands: Brand[] = [
     name: 'Mercedes-Benz',
     category: 'Luxury Sedan',
     year: '2025',
-    cover: storageUrl('images', 'mercedes-benz-cover.png'),
+    cover: '/images/mercedes-benz-cover.png',
     video: storageUrl('videos', 'mercedes-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'mercedes-amg-gt-2024.mp4'), title: '2024 AMG GT Commercial' },
@@ -29,7 +29,7 @@ const brands: Brand[] = [
     name: 'BMW',
     category: 'Sport Series',
     year: '2025',
-    cover: storageUrl('images', 'bmw-cover.png'),
+    cover: '/images/bmw-cover.png',
     video: storageUrl('videos', 'bmw-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'bmw-m4.mp4'),        title: 'The New BMW M4' },
@@ -43,7 +43,7 @@ const brands: Brand[] = [
     name: 'Lamborghini',
     category: 'Supercar',
     year: '2025',
-    cover: storageUrl('images', 'lamborghini-cover.png'),
+    cover: '/images/lamborghini-cover.png',
     video: storageUrl('videos', 'lamborghini-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'lambo-revuelto.mp4'),      title: 'Lamborghini Revuelto' },
@@ -58,7 +58,7 @@ const brands: Brand[] = [
     name: 'Ferrari',
     category: 'Grand Tourer',
     year: '2025',
-    cover: storageUrl('images', 'ferrari-cover.png'),
+    cover: '/images/ferrari-cover.png',
     video: storageUrl('videos', 'ferrari-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'ferrari-purosangue.mp4'), title: 'Ferrari Purosangue' },
@@ -71,7 +71,7 @@ const brands: Brand[] = [
     name: 'Tesla',
     category: 'Electric',
     year: '2025',
-    cover: storageUrl('images', 'tesla-cover.png'),
+    cover: '/images/tesla-cover.png',
     video: storageUrl('videos', 'tesla-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'tesla-roadster.mp4'),   title: 'Tesla Roadster' },
@@ -84,7 +84,7 @@ const brands: Brand[] = [
     name: 'Toyota',
     category: 'Everyday',
     year: '2025',
-    cover: storageUrl('images', 'toyota-cover.png'),
+    cover: '/images/toyota-cover.png',
     video: storageUrl('videos', 'toyota-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'toyota-gr-supra-compressed.mp4'), title: 'Toyota GR Supra' },

@@ -8,10 +8,9 @@ interface LoadingScreenProps {
   ready?: boolean
 }
 
-// Hardcoded URL — never breaks even if env var is missing at build time
 const SPLASH_VIDEO =
   'https://ggdflkchtogsssnakxsh.supabase.co/storage/v1/object/public/videos/splashscreenvideo.mp4'
-const SPLASH_DURATION_MS = 8000 // 8 seconds
+const SPLASH_DURATION_MS = 8000
 
 export default function LoadingScreen({ onComplete, ready = true }: LoadingScreenProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -21,8 +20,9 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
   const doneRef      = useRef(false)
   const startedRef   = useRef(false)
 
-  const [progress, setProgress] = useState(0)
-  const [started,  setStarted]  = useState(false)
+  const [progress,    setProgress]    = useState(0)
+  const [started,     setStarted]     = useState(false)
+  const [videoLoaded, setVideoLoaded] = useState(false)
 
   const finish = () => {
     if (doneRef.current) return
@@ -47,15 +47,17 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
     setStarted(true)
   }
 
-  // Try to play immediately; start bar after 1 s regardless (slow networks / mobile)
   useEffect(() => {
-    videoRef.current?.play().catch(() => {})
+    // Try to play; always start the progress bar after 1s regardless
+    const v = videoRef.current
+    if (v) {
+      v.play().catch(() => {})
+    }
     const t = setTimeout(beginProgress, 1000)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Animate progress bar over SPLASH_DURATION_MS then finish
   useEffect(() => {
     if (!started) return
     let raf = 0
@@ -72,9 +74,9 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
-  // Absolute safety net — never trap user beyond 14 s
+  // Hard safety net
   useEffect(() => {
-    const t = setTimeout(() => finish(), SPLASH_DURATION_MS + 6000)
+    const t = setTimeout(() => finish(), SPLASH_DURATION_MS + 5000)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -84,35 +86,70 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[100] bg-black"
+      className="fixed inset-0 z-[100] bg-black overflow-hidden"
       style={{ height: '100dvh' }}
     >
-      {/* Splash video */}
+      {/* === VIDEO LAYER === */}
       <video
         ref={videoRef}
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover z-[1]"
         src={SPLASH_VIDEO}
         autoPlay
         muted
         playsInline
         preload="auto"
-        onCanPlay={() => { videoRef.current?.play().catch(() => {}); beginProgress() }}
-        onPlaying={beginProgress}
+        onCanPlay={() => { videoRef.current?.play().catch(() => {}); setVideoLoaded(true); beginProgress() }}
+        onPlaying={() => { setVideoLoaded(true); beginProgress() }}
         onError={beginProgress}
       />
 
-      {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 w-full z-10">
-        <div className="relative h-7 md:h-9 w-full bg-gray-200 overflow-hidden">
+      {/* === FALLBACK BRANDED SPLASH (always visible, sits behind video) === */}
+      <div
+        className="absolute inset-0 z-[0] flex flex-col items-center justify-center bg-black"
+        style={{ opacity: videoLoaded ? 0 : 1, transition: 'opacity 0.8s ease' }}
+      >
+        {/* Animated logo mark */}
+        <div className="relative flex items-center justify-center mb-8">
+          <div className="w-20 h-20 rounded-full border-2 border-white/20 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full border border-blue-accent/60 flex items-center justify-center animate-pulse">
+              <div className="w-8 h-8 rounded-full bg-blue-accent/80" />
+            </div>
+          </div>
+          {/* Orbiting dot */}
           <div
-            className="absolute inset-y-0 left-0 bg-blue-accent"
-            style={{ width: `${pct}%`, transition: 'width 120ms ease-out' }}
+            className="absolute w-2 h-2 rounded-full bg-blue-accent"
+            style={{ animation: 'orbit 2s linear infinite' }}
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-900 text-xs font-semibold tabular-nums">
-            {pct} %
+        </div>
+
+        <h1
+          className="font-display text-4xl md:text-6xl font-bold uppercase tracking-widest text-white"
+          style={{ letterSpacing: '0.3em' }}
+        >
+          Major
+        </h1>
+        <p className="mt-2 text-white/40 text-xs uppercase tracking-[0.4em]">Media Agency</p>
+      </div>
+
+      {/* === PROGRESS BAR === */}
+      <div className="absolute bottom-0 left-0 w-full z-[10]">
+        <div className="relative h-7 md:h-9 w-full bg-gray-900 overflow-hidden">
+          <div
+            className="absolute inset-y-0 left-0 bg-blue-accent transition-all duration-150 ease-out"
+            style={{ width: `${pct}%` }}
+          />
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 text-xs font-semibold tabular-nums">
+            {pct}%
           </span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes orbit {
+          from { transform: rotate(0deg) translateX(42px) rotate(0deg); }
+          to   { transform: rotate(360deg) translateX(42px) rotate(-360deg); }
+        }
+      `}</style>
     </div>
   )
 }
