@@ -13,7 +13,7 @@ const brands: Brand[] = [
     category: 'Luxury Sedan',
     year: '2025',
     cover: '/images/mercedes-benz-cover.png',
-    video: '/videos/mercedes.mp4',
+    video: '/videos/mercedes-cover.mp4',
     videos: [
       { src: '/videos/mercedes-amg-gt-2024.mp4', title: '2024 AMG GT Commercial' },
       { src: '/videos/mercedes-amg-drift.mp4', title: 'The Drift of a Lifetime' },
@@ -27,7 +27,7 @@ const brands: Brand[] = [
     category: 'Sport Series',
     year: '2025',
     cover: '/images/bmw-cover.png',
-    video: '/videos/bmw.mp4',
+    video: '/videos/bmw-cover.mp4',
     videos: [
       { src: '/videos/bmw-m4.mp4', title: 'The New BMW M4' },
       { src: '/videos/bmw-x5.mp4', title: 'BMW X5' },
@@ -41,7 +41,7 @@ const brands: Brand[] = [
     category: 'Supercar',
     year: '2025',
     cover: '/images/lamborghini-cover.png',
-    video: '/videos/lamborghini.mp4',
+    video: '/videos/lamborghini-cover.mp4',
     videos: [
       { src: '/videos/lambo-revuelto.mp4', title: 'Lamborghini Revuelto' },
       { src: '/videos/lambo-aventador-s.mp4', title: 'Aventador S' },
@@ -56,7 +56,7 @@ const brands: Brand[] = [
     category: 'Grand Tourer',
     year: '2025',
     cover: '/images/ferrari-cover.png',
-    video: '/videos/ferari.mp4',
+    video: '/videos/ferrari-cover.mp4',
     videos: [
       { src: '/videos/ferrari-purosangue.mp4', title: 'Ferrari Purosangue' },
       { src: '/videos/ferrari-sf90.mp4', title: 'SF90 Stradale' },
@@ -69,7 +69,7 @@ const brands: Brand[] = [
     category: 'Electric',
     year: '2025',
     cover: '/images/tesla-cover.png',
-    video: '/videos/tesla.mp4',
+    video: '/videos/tesla-cover.mp4',
     videos: [
       { src: '/videos/tesla-roadster.mp4', title: 'Tesla Roadster' },
       { src: '/videos/tesla-cybertruck.mp4', title: 'Cybertruck' },
@@ -82,7 +82,7 @@ const brands: Brand[] = [
     category: 'Everyday',
     year: '2025',
     cover: '/images/toyota-cover.png',
-    video: '/videos/toyota.mp4',
+    video: '/videos/toyota-cover.mp4',
     videos: [
       { src: '/videos/toyota-gr-supra.mp4', title: 'Toyota GR Supra' },
       { src: '/videos/toyota-land-cruiser.mp4', title: 'Land Cruiser' },
