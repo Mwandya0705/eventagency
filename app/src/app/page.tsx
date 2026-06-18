@@ -64,8 +64,32 @@ const brands: Brand[] = [
       { src: '/videos/ferrari-roma.mp4', title: 'The New Ferrari Roma' },
     ],
   },
-  { name: 'Tesla', category: 'Electric', year: '2025', cover: '/images/tesla-cover.png', video: '/videos/tesla.mp4' },
-  { name: 'Toyota', category: 'Everyday', year: '2025', cover: '/images/toyota-cover.png', video: '/videos/toyota.mp4' },
+  {
+    name: 'Tesla',
+    category: 'Electric',
+    year: '2025',
+    cover: '/images/tesla-cover.png',
+    video: '/videos/tesla.mp4',
+    videos: [
+      { src: '/videos/tesla-roadster.mp4', title: 'Tesla Roadster' },
+      { src: '/videos/tesla-cybertruck.mp4', title: 'Cybertruck' },
+      { src: '/videos/tesla-model-y.mp4', title: 'The New Model Y' },
+      { src: '/videos/tesla-semi.mp4', title: 'Tesla Semi' },
+    ],
+  },
+  {
+    name: 'Toyota',
+    category: 'Everyday',
+    year: '2025',
+    cover: '/images/toyota-cover.png',
+    video: '/videos/toyota.mp4',
+    videos: [
+      { src: '/videos/toyota-gr-supra.mp4', title: 'Toyota GR Supra' },
+      { src: '/videos/toyota-land-cruiser.mp4', title: 'Land Cruiser' },
+      { src: '/videos/toyota-crown.mp4', title: 'Toyota Crown' },
+      { src: '/videos/toyota-tacoma.mp4', title: 'Toyota Tacoma' },
+    ],
+  },
 ]
 
 const N = brands.length
