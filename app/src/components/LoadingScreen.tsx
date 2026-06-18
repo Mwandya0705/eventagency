@@ -9,7 +9,10 @@ interface LoadingScreenProps {
   ready?: boolean
 }
 
-const SPLASH_DURATION_MS = 8000
+// Skip the video's black intro: start at 3s, run to 10s (a 7s window).
+const SPLASH_START_S = 3
+const SPLASH_END_S = 10
+const SPLASH_DURATION_MS = (SPLASH_END_S - SPLASH_START_S) * 1000
 const SPLASH_VIDEO = storageUrl('videos', 'splashscreenvideo.mp4')
 
 export default function LoadingScreen({ onComplete, ready = true }: LoadingScreenProps) {
@@ -48,11 +51,23 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
     setStarted(true)
   }
 
-  // Play the video as early as possible; if autoplay is blocked/slow, start the bar anyway.
-  useEffect(() => {
+  // Jump past the black intro to the 3s mark and play; if events are slow, start the bar anyway.
+  const startVideo = () => {
     const v = videoRef.current
-    if (v) v.play().catch(() => {})
-    const fallbackStart = setTimeout(beginProgress, 1200)
+    if (!v) return
+    if (v.currentTime < SPLASH_START_S) {
+      try {
+        v.currentTime = SPLASH_START_S
+      } catch {
+        /* metadata not ready yet */
+      }
+    }
+    v.play().catch(() => {})
+  }
+
+  useEffect(() => {
+    startVideo()
+    const fallbackStart = setTimeout(beginProgress, 2500)
     return () => clearTimeout(fallbackStart)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -95,17 +110,24 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
       className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
       style={{ height: '100dvh' }}
     >
-      {/* Splash video from Supabase Storage */}
+      {/* Splash video from Supabase Storage — starts at 3s to skip the black intro */}
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover"
-        src={SPLASH_VIDEO}
-        autoPlay
+        src={`${SPLASH_VIDEO}#t=${SPLASH_START_S}`}
         muted
         playsInline
         preload="auto"
-        onPlaying={beginProgress}
-        onCanPlay={() => videoRef.current?.play().catch(() => {})}
+        onLoadedMetadata={startVideo}
+        onCanPlay={startVideo}
+        onPlaying={() => {
+          const v = videoRef.current
+          if (v && v.currentTime >= SPLASH_START_S - 0.1) beginProgress()
+        }}
+        onTimeUpdate={() => {
+          const v = videoRef.current
+          if (v && v.currentTime >= SPLASH_END_S) finish()
+        }}
       />
 
       {/* Progress bar */}
