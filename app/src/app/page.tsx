@@ -15,7 +15,7 @@ const brands: Brand[] = [
     name: 'Mercedes-Benz',
     category: 'Luxury Sedan',
     year: '2025',
-    cover: storageUrl('images', 'mercedes-coverphoto.png'),
+    cover: storageUrl('images', 'mercedes-benz-cover.png'),
     video: storageUrl('videos', 'mercedes-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'mercedes-amg-gt-2024.mp4'), title: '2024 AMG GT Commercial' },
@@ -29,7 +29,7 @@ const brands: Brand[] = [
     name: 'BMW',
     category: 'Sport Series',
     year: '2025',
-    cover: storageUrl('images', 'bmw-coverphoto.png'),
+    cover: storageUrl('images', 'bmw-cover.png'),
     video: storageUrl('videos', 'bmw-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'bmw-m4.mp4'),        title: 'The New BMW M4' },
@@ -43,7 +43,7 @@ const brands: Brand[] = [
     name: 'Lamborghini',
     category: 'Supercar',
     year: '2025',
-    cover: storageUrl('images', 'lamborghini-coverphoto.png'),
+    cover: storageUrl('images', 'lamborghini-cover.png'),
     video: storageUrl('videos', 'lamborghini-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'lambo-revuelto.mp4'),      title: 'Lamborghini Revuelto' },
@@ -58,7 +58,7 @@ const brands: Brand[] = [
     name: 'Ferrari',
     category: 'Grand Tourer',
     year: '2025',
-    cover: storageUrl('images', 'ferrari-coverphoto.png'),
+    cover: storageUrl('images', 'ferrari-cover.png'),
     video: storageUrl('videos', 'ferrari-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'ferrari-purosangue.mp4'), title: 'Ferrari Purosangue' },
@@ -71,7 +71,7 @@ const brands: Brand[] = [
     name: 'Tesla',
     category: 'Electric',
     year: '2025',
-    cover: storageUrl('images', 'tesla-coverphoto.png'),
+    cover: storageUrl('images', 'tesla-cover.png'),
     video: storageUrl('videos', 'tesla-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'tesla-roadster.mp4'),   title: 'Tesla Roadster' },
@@ -84,7 +84,7 @@ const brands: Brand[] = [
     name: 'Toyota',
     category: 'Everyday',
     year: '2025',
-    cover: storageUrl('images', 'toyota-coverphoto.png'),
+    cover: storageUrl('images', 'toyota-cover.png'),
     video: storageUrl('videos', 'toyota-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'toyota-gr-supra-compressed.mp4'), title: 'Toyota GR Supra' },
@@ -96,7 +96,7 @@ const brands: Brand[] = [
 ]
 
 const N = brands.length
-const COVER_HOLD_MS = 1500
+const COVER_HOLD_MS = 3500
 const SCROLL_BAND = 0.3
 
 export default function Home() {
@@ -156,20 +156,27 @@ export default function Home() {
     }
   }, [loaded])
 
-  // On each brand: show cover, then autoplay video
+  // On each brand: show cover, start video immediately, hide cover once video plays
   useEffect(() => {
     if (!loaded) return
     videoRefs.current.forEach((v) => {
       if (v) { v.pause(); v.currentTime = 0 }
     })
     setCoverVisible(true)
-    const timer = setTimeout(() => {
-      setCoverVisible(false)
+
+    // Start playing the active video after a short hold
+    const playTimer = setTimeout(() => {
       if (projectRef.current !== null) return
       const v = videoRefs.current[active]
       if (v) { v.currentTime = 0; v.play().catch(() => {}) }
+    }, 500)
+
+    // Fallback: hide cover after COVER_HOLD_MS even if onPlaying hasn't fired
+    const fallbackTimer = setTimeout(() => {
+      setCoverVisible(false)
     }, COVER_HOLD_MS)
-    return () => clearTimeout(timer)
+
+    return () => { clearTimeout(playTimer); clearTimeout(fallbackTimer) }
   }, [active, loaded])
 
   // Pause landing video when project opens; resume on return
@@ -256,19 +263,18 @@ export default function Home() {
                   className="absolute inset-0 transition-opacity duration-700 ease-out"
                   style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
                 >
-                  {/* Cover image — high priority for active brand, loads instantly */}
+                  {/* Cover image — high priority for active brand, shows instantly */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={b.cover}
                     alt={b.name}
                     fetchPriority={isActive ? 'high' : 'low'}
                     decoding="async"
-                    className={`absolute inset-0 w-full h-full object-contain object-center bg-black transition-opacity duration-700 ease-out ${
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out ${
                       isActive && coverVisible ? 'opacity-100' : 'opacity-0'
                     }`}
                   />
-                  {/* Cover video — ALL brands get src + preload=metadata so they buffer
-                      during the 8-second splash and play instantly when scrolled to */}
+                  {/* Video — hides cover the instant it starts playing */}
                   <video
                     ref={(el) => { videoRefs.current[i] = el }}
                     src={b.video}
@@ -276,11 +282,13 @@ export default function Home() {
                     playsInline
                     preload={isActive ? 'auto' : 'metadata'}
                     poster={b.cover}
-                    className="absolute inset-0 w-full h-full object-contain object-center bg-black"
+                    onPlaying={() => { if (isActive) setCoverVisible(false) }}
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
                 </div>
               )
             })}
+
 
             {/* Foreground overlay */}
             <div className="absolute inset-0 z-20 pointer-events-none">
