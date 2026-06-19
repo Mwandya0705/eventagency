@@ -1,23 +1,57 @@
 'use client'
 
-import { Suspense, useRef } from 'react'
+import { Suspense, useRef, Component, ReactNode } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
+
+/* ─── Error boundary: catches missing / broken GLB gracefully ─── */
+interface EBState { hasError: boolean }
+class ModelErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, EBState> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() { return { hasError: true } }
+  render() {
+    if (this.state.hasError) return this.props.fallback
+    return this.props.children
+  }
+}
+
+/* ─── Placeholder shape when no model file is present ──────────── */
+function PlaceholderShape() {
+  const meshRef = useRef<THREE.Mesh>(null)
+  useFrame((_, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.6
+      meshRef.current.rotation.x += delta * 0.2
+    }
+  })
+  return (
+    <mesh ref={meshRef} castShadow>
+      <icosahedronGeometry args={[1.2, 1]} />
+      <meshStandardMaterial
+        color="#3B5BFF"
+        metalness={0.8}
+        roughness={0.2}
+        wireframe={false}
+      />
+    </mesh>
+  )
+}
 
 /* ─── The actual 3-D model ─────────────────────────────────────── */
 function Model({ url }: { url: string }) {
   const { scene } = useGLTF(url)
   const groupRef = useRef<THREE.Group>(null)
 
-  // Gentle auto-rotation when the user isn't dragging
   useFrame((_, delta) => {
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.4
     }
   })
 
-  // Make sure every mesh casts & receives shadows
   scene.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
       child.castShadow = true
@@ -32,33 +66,65 @@ function Model({ url }: { url: string }) {
   )
 }
 
-/* ─── Loading ring shown while the GLB is fetching ─────────────── */
-function Loader() {
+/* ─── Spinning ring while GLB is downloading ─────────────────── */
+function LoadingRing() {
+  const ref = useRef<THREE.Mesh>(null)
+  useFrame((_, delta) => { if (ref.current) ref.current.rotation.z += delta * 2 })
   return (
-    <mesh>
-      <torusGeometry args={[0.6, 0.05, 16, 100]} />
+    <mesh ref={ref}>
+      <torusGeometry args={[0.7, 0.05, 16, 100]} />
       <meshStandardMaterial color="#3B5BFF" />
     </mesh>
   )
 }
 
+/* ─── Scene – shared wrapper ────────────────────────────────── */
+function Scene({ modelPath, modelReady }: { modelPath: string; modelReady: boolean }) {
+  return (
+    <>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
+      <pointLight position={[-5, 5, -5]} intensity={0.5} color="#3B5BFF" />
+      <Environment preset="city" />
+      <ContactShadows position={[0, -2.4, 0]} opacity={0.35} scale={8} blur={2} far={5} />
+
+      <Suspense fallback={<LoadingRing />}>
+        {modelReady ? (
+          <ModelErrorBoundary fallback={<PlaceholderShape />}>
+            <Model url={modelPath} />
+          </ModelErrorBoundary>
+        ) : (
+          <PlaceholderShape />
+        )}
+      </Suspense>
+
+      <OrbitControls
+        enablePan={false}
+        enableZoom={false}
+        minPolarAngle={Math.PI / 4}
+        maxPolarAngle={Math.PI / 1.6}
+      />
+    </>
+  )
+}
+
 /* ─── Public API ────────────────────────────────────────────────── */
 interface ModelViewerProps {
-  /** Path to the .glb file served from /public, e.g. "/models/squid-game-worker.glb" */
   modelPath?: string
-  /** Height of the canvas – defaults to 420px */
   height?: number | string
+  /** Set to true only once the .glb has been uploaded to /public/models/ */
+  modelReady?: boolean
 }
 
 export default function ModelViewer({
   modelPath = '/models/squid-game-worker.glb',
-  height = 420,
+  height = 440,
+  modelReady = false,
 }: ModelViewerProps) {
   return (
     <div
-      style={{ height, cursor: 'grab' }}
-      className="w-full relative select-none"
-      title="Drag to rotate"
+      style={{ height }}
+      className="w-full relative select-none cursor-grab active:cursor-grabbing"
     >
       <Canvas
         shadows
@@ -66,51 +132,23 @@ export default function ModelViewer({
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
       >
-        {/* Lighting */}
-        <ambientLight intensity={0.6} />
-        <directionalLight
-          position={[5, 10, 5]}
-          intensity={1.2}
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-        />
-        <pointLight position={[-5, 5, -5]} intensity={0.5} color="#3B5BFF" />
-
-        {/* HDR environment for reflections */}
-        <Environment preset="city" />
-
-        {/* Ground shadow */}
-        <ContactShadows
-          position={[0, -2.4, 0]}
-          opacity={0.4}
-          scale={8}
-          blur={2.5}
-          far={5}
-        />
-
-        {/* Model */}
-        <Suspense fallback={<Loader />}>
-          <Model url={modelPath} />
-        </Suspense>
-
-        {/* Mouse drag = orbit; scroll = zoom; right-drag = pan */}
-        <OrbitControls
-          enablePan={false}
-          enableZoom={false}
-          autoRotate={false}
-          minPolarAngle={Math.PI / 4}
-          maxPolarAngle={Math.PI / 1.6}
-        />
+        <Scene modelPath={modelPath} modelReady={modelReady} />
       </Canvas>
 
-      {/* "Drag" hint overlay */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-1.5 text-[10px] font-mono tracking-widest text-white/40 uppercase animate-pulse">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0m0 0V2a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0v10" />
-          <path d="M6 12v2a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-3" />
+      {/* Hint label */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2 text-[10px] font-mono tracking-[0.3em] text-white/35 uppercase">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 11V6a2 2 0 0 0-4 0v0M14 10V4a2 2 0 0 0-4 0v6m0 0V2a2 2 0 0 0-4 0v10" />
+          <path d="M6 12v2a6 6 0 0 0 12 0v-3" />
         </svg>
         Drag to rotate
       </div>
+
+      {!modelReady && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none text-[9px] font-mono text-white/25 tracking-widest uppercase">
+          3D model pending upload
+        </div>
+      )}
     </div>
   )
 }
