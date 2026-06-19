@@ -48,7 +48,8 @@ export interface Brand {
   name: string
   category: string
   year: string
-  cover: string
+  coverSm: string
+  coverLg: string
   video: string
   videos?: Clip[]
 }

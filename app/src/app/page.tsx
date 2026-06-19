@@ -15,7 +15,8 @@ const brands: Brand[] = [
     name: 'Mercedes-Benz',
     category: 'Luxury Sedan',
     year: '2025',
-    cover: '/images/mercedes-coverphoto.png',
+    coverSm: '/images/mercedes-cover-sm.png',
+    coverLg: '/images/mercedes-cover-lg.png',
     video: storageUrl('videos', 'mercedes-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'mercedes-amg-gt-2024.mp4'), title: '2024 AMG GT Commercial' },
@@ -29,7 +30,8 @@ const brands: Brand[] = [
     name: 'BMW',
     category: 'Sport Series',
     year: '2025',
-    cover: '/images/bmw-cover.png',
+    coverSm: '/images/bmw-cover-sm.png',
+    coverLg: '/images/bmw-cover-lg.png',
     video: storageUrl('videos', 'bmw-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'bmw-m4.mp4'),        title: 'The New BMW M4' },
@@ -43,7 +45,8 @@ const brands: Brand[] = [
     name: 'Lamborghini',
     category: 'Supercar',
     year: '2025',
-    cover: '/images/lamborghini-cover.png',
+    coverSm: '/images/lamborghini-cover-sm.png',
+    coverLg: '/images/lamborghini-cover-lg.png',
     video: storageUrl('videos', 'lamborghini-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'lambo-revuelto.mp4'),      title: 'Lamborghini Revuelto' },
@@ -58,7 +61,8 @@ const brands: Brand[] = [
     name: 'Ferrari',
     category: 'Grand Tourer',
     year: '2025',
-    cover: '/images/ferrari-cover.png',
+    coverSm: '/images/ferrari-cover-sm.png',
+    coverLg: '/images/ferrari-cover-lg.png',
     video: storageUrl('videos', 'ferrari-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'ferrari-purosangue.mp4'), title: 'Ferrari Purosangue' },
@@ -71,7 +75,8 @@ const brands: Brand[] = [
     name: 'Tesla',
     category: 'Electric',
     year: '2025',
-    cover: '/images/tesla-cover.png',
+    coverSm: '/images/tesla-cover-sm.png',
+    coverLg: '/images/tesla-cover-lg.png',
     video: storageUrl('videos', 'tesla-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'tesla-roadster.mp4'),   title: 'Tesla Roadster' },
@@ -84,7 +89,8 @@ const brands: Brand[] = [
     name: 'Toyota',
     category: 'Everyday',
     year: '2025',
-    cover: '/images/toyota-cover.png',
+    coverSm: '/images/toyota-cover-sm.png',
+    coverLg: '/images/toyota-cover-lg.png',
     video: storageUrl('videos', 'toyota-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'toyota-gr-supra-compressed.mp4'), title: 'Toyota GR Supra' },
@@ -117,15 +123,17 @@ export default function Home() {
   const cursorModeRef = useRef<'view' | 'scroll'>('view')
   const cursorActiveRef = useRef(false)
 
-  // Preload cover images so the splash hands off cleanly.
+  // Preload cover images so the splash hands off cleanly — only the size this screen needs.
   useEffect(() => {
+    const isLarge =
+      typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
     const promises = brands.map(
       (b) =>
         new Promise<void>((resolve) => {
           const img = new Image()
           img.onload = () => resolve()
           img.onerror = () => resolve()
-          img.src = b.cover
+          img.src = isLarge ? b.coverLg : b.coverSm
         })
     )
     Promise.all(promises).then(() => setImagesReady(true))
@@ -270,21 +278,25 @@ export default function Home() {
                     muted
                     playsInline
                     preload={isActive ? 'auto' : 'metadata'}
-                    poster={b.cover}
+                    poster={b.coverSm}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-                  {/* Cover image — high priority for active brand, shows instantly */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={b.cover}
-                    alt={b.name}
-                    fetchPriority={isActive ? 'high' : 'low'}
-                    decoding="async"
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out ${
-                      isActive && coverVisible ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  />
+                  {/* Cover photo — responsive: lg image on large screens, sm on small.
+                      <picture> ensures only the matching size is downloaded. */}
+                  <picture>
+                    <source media="(min-width: 1024px)" srcSet={b.coverLg} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={b.coverSm}
+                      alt={b.name}
+                      fetchPriority={isActive ? 'high' : 'low'}
+                      decoding="async"
+                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-out ${
+                        isActive && coverVisible ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    />
+                  </picture>
                 </div>
               )
             })}
