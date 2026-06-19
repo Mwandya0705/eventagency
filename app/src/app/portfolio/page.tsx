@@ -125,29 +125,33 @@ export default function PortfolioPage() {
   }, [viewMode, searchQuery, selectedService, selectedClient, selectedYear])
 
   return (
-    <div className="bg-black text-white min-h-screen selection:bg-blue-accent selection:text-white">
+    <div className="bg-[#0a0a1a] text-white min-h-screen selection:bg-blue-accent selection:text-white">
       <Navbar />
 
-      {/* Hero Section (Top Part) */}
-      <section className="relative h-[95vh] w-full flex flex-col items-center justify-center overflow-hidden bg-black">
-        {/* Soft, glowing blue radial background gradient */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-accent/20 via-blue-accent/2 to-transparent opacity-80 blur-3xl z-0" />
-        
-        {/* Giant outline PORTFOLIO text in background */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-10">
-          <h1 className="font-display text-[15vw] font-black uppercase tracking-tighter text-white/5 leading-none">
+      {/* Hero Section — Blue gradient like inspiration */}
+      <section className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #1a6dff 0%, #0d4fd8 30%, #0a2a8a 65%, #06153d 100%)' }}
+      >
+        {/* Subtle top-center radial glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(80,160,255,0.35),transparent)] pointer-events-none z-0" />
+
+        {/* Giant PORTFOLIO text — white, solid, filling full width */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-10 px-2">
+          <h1 className="font-display font-black uppercase leading-none tracking-tighter text-white"
+            style={{ fontSize: 'clamp(80px, 14vw, 200px)', opacity: 0.92 }}
+          >
             PORTFOLIO
           </h1>
         </div>
 
-        {/* 3D Model Container — drops in the Squid Game Worker GLB */}
-        <div className="relative z-20 w-full max-w-xl mt-8 flex items-center justify-center">
-          <ModelViewer modelPath="/models/squid_game_-_worker.glb" height={440} modelReady={true} />
+        {/* 3D Model — large, centered, overlapping text like the keychain */}
+        <div className="relative z-20 w-full flex items-center justify-center" style={{ marginTop: '8vh', height: '86vh' }}>
+          <ModelViewer modelPath="/models/squid_game_-_worker.glb" height="100%" modelReady={true} />
         </div>
 
-        {/* Scroll indicator at the bottom */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
-          <div className="text-[10px] md:text-xs font-mono tracking-[0.4em] uppercase text-white/40 animate-pulse">
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
+          <div className="text-[10px] font-mono tracking-[0.4em] uppercase text-white/60 animate-pulse">
             ⇅ Scroll For More ⇅
           </div>
         </div>

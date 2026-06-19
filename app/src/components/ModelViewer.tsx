@@ -43,15 +43,15 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.2
+    renderer.toneMappingExposure = 1.4
     mount.appendChild(renderer.domElement)
 
     /* ── Scene ── */
     const scene = new THREE.Scene()
 
-    /* ── Camera ── */
-    const camera = new THREE.PerspectiveCamera(50, mount.clientWidth / mount.clientHeight, 0.1, 1000)
-    camera.position.set(0, 1.2, 4.5)
+    /* ── Camera — pulled back so full figure is visible ── */
+    const camera = new THREE.PerspectiveCamera(45, mount.clientWidth / mount.clientHeight, 0.1, 1000)
+    camera.position.set(0, 1.5, 6.5)
 
     /* ── Lights ── */
     const ambient = new THREE.AmbientLight(0xffffff, 0.7)
@@ -73,15 +73,15 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
     scene.add(fillLight)
 
     /* ── Ground shadow disc ── */
-    const shadowGeo = new THREE.CircleGeometry(1.4, 32)
+    const shadowGeo = new THREE.CircleGeometry(1.8, 32)
     const shadowMat = new THREE.MeshBasicMaterial({
       color: 0x000000,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.25,
     })
     const shadowDisc = new THREE.Mesh(shadowGeo, shadowMat)
     shadowDisc.rotation.x = -Math.PI / 2
-    shadowDisc.position.y = -1.55
+    shadowDisc.position.y = -2.0
     scene.add(shadowDisc)
 
     /* ── Pivot for rotation ── */
@@ -116,13 +116,13 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
           const centre = box.getCenter(new THREE.Vector3())
 
           const maxDim = Math.max(size.x, size.y, size.z)
-          const targetHeight = 3.0            // world units tall
+          const targetHeight = 4.2            // taller so full figure fills canvas
           const scale = targetHeight / maxDim
           model.scale.setScalar(scale)
 
-          // Shift model so its feet are at y=0 of the pivot
+          // Align feet to shadow disc at y = -2.0
           model.position.x = -centre.x * scale
-          model.position.y = (-box.min.y) * scale - 1.55  // align feet to shadow disc
+          model.position.y = (-box.min.y) * scale - 2.0
           model.position.z = -centre.z * scale
 
           model.traverse((child) => {
@@ -224,6 +224,7 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
 /* ─── Public component ─────────────────────────────────────────── */
 interface ModelViewerProps {
   modelPath?: string
+  /** Number (px) or CSS string like "100%" */
   height?: number | string
   modelReady?: boolean
 }
@@ -235,7 +236,9 @@ export default function ModelViewer({
 }: ModelViewerProps) {
   return (
     <div
-      style={{ height }}
+      style={height === '100%'
+        ? { position: 'absolute', inset: 0 }
+        : { height }}
       className="w-full relative select-none"
     >
       <SceneErrorBoundary>
