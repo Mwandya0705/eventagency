@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from 'react'
 import Navbar from '@/components/Navbar'
 import BigFooter from '@/components/BigFooter'
+import dynamic from 'next/dynamic'
+
+const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
 
 interface Project {
   id: number
@@ -44,6 +47,11 @@ const allProjects: Project[] = [
 
 export default function PortfolioPage() {
   const [viewMode, setViewMode] = useState<'card' | 'list' | 'grid'>('card')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedService, setSelectedService] = useState('All')
   const [selectedClient, setSelectedClient] = useState('All')
@@ -124,7 +132,7 @@ export default function PortfolioPage() {
     <div className="bg-[#0a0a1a] text-white min-h-screen selection:bg-blue-accent selection:text-white">
       <Navbar />
 
-      {/* Hero Section — Blue gradient, PORTFOLIO text only */}
+      {/* Hero Section — Blue gradient, PORTFOLIO text & 3D model */}
       <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #1a6dff 0%, #0d4fd8 30%, #0a2a8a 65%, #06153d 100%)' }}
       >
@@ -132,13 +140,26 @@ export default function PortfolioPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(80,160,255,0.35),transparent)] pointer-events-none z-0" />
 
         {/* Giant PORTFOLIO text — very tall, bold, covering the screen */}
-        <div className="relative z-10 w-full text-center pointer-events-none select-none px-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-10">
           <h1
-            className="font-display font-black uppercase leading-none tracking-tighter text-white w-full"
-            style={{ fontSize: 'clamp(80px, 20vw, 260px)', opacity: 1, letterSpacing: '-0.04em' }}
+            className="font-display font-black uppercase leading-none tracking-tighter text-white/95 w-full"
+            style={{ fontSize: 'clamp(90px, 22vw, 320px)', letterSpacing: '-0.05em' }}
           >
             PORTFOLIO
           </h1>
+        </div>
+
+        {/* 3D Model Container — shifted up and scaled so it's fully visible */}
+        <div className="absolute top-[6vh] bottom-[14vh] left-1/2 -translate-x-1/2 w-full max-w-4xl z-20 pointer-events-none">
+          <div className="w-full h-full pointer-events-auto">
+            {mounted && (
+              <ModelViewer
+                modelPath="/models/squid_game_-_worker.glb"
+                height="100%"
+                modelReady={true}
+              />
+            )}
+          </div>
         </div>
 
         {/* Scroll indicator */}

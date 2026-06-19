@@ -1,9 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
-
-const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
 
 export default function BigFooter() {
   return (
@@ -11,30 +8,8 @@ export default function BigFooter() {
       className="relative text-white overflow-hidden border-t border-white/10"
       style={{ background: 'linear-gradient(180deg, #06153d 0%, #0a2a8a 50%, #0d4fd8 100%)' }}
     >
-      {/* ── Upper footer: 3D model centred, compact ── */}
-      <div className="relative flex flex-col items-center justify-end overflow-hidden" style={{ height: 340 }}>
-        {/* Ghost PAMEDIA text behind model */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <span
-            className="font-display font-black uppercase text-white"
-            style={{ fontSize: 'clamp(60px, 14vw, 200px)', opacity: 0.08, letterSpacing: '-0.04em', lineHeight: 1 }}
-          >
-            PAMEDIA
-          </span>
-        </div>
-
-        {/* 3D model — sits at bottom of this strip, appears to stand on the footer line */}
-        <div className="relative z-10 w-full max-w-xs" style={{ height: 340 }}>
-          <ModelViewer
-            modelPath="/models/squid_game_-_worker.glb"
-            height="100%"
-            modelReady={true}
-          />
-        </div>
-      </div>
-
       {/* ── Bottom links & copyright — compact ── */}
-      <div className="border-t border-white/15 px-6 md:px-12 py-8">
+      <div className="px-6 md:px-12 py-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
 
           {/* Brand */}

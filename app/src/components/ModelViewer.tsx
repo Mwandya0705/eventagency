@@ -51,8 +51,8 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
 
     /* ── Camera — centred on model so full figure shows head to toe ── */
     const camera = new THREE.PerspectiveCamera(40, mount.clientWidth / mount.clientHeight, 0.1, 1000)
-    camera.position.set(0, 0.2, 7.5)
-    camera.lookAt(0, 0.1, 0)  // look at model centre
+    camera.position.set(0, 0.0, 8.0)
+    camera.lookAt(0, 0.0, 0)  // look at model centre
 
     /* ── Lights ── */
     const ambient = new THREE.AmbientLight(0xffffff, 0.7)
@@ -82,7 +82,7 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
     })
     const shadowDisc = new THREE.Mesh(shadowGeo, shadowMat)
     shadowDisc.rotation.x = -Math.PI / 2
-    shadowDisc.position.y = -2.0
+    shadowDisc.position.y = -1.9
     scene.add(shadowDisc)
 
     /* ── Pivot for rotation ── */
@@ -117,13 +117,13 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
           const centre = box.getCenter(new THREE.Vector3())
 
           const maxDim = Math.max(size.x, size.y, size.z)
-          const targetHeight = 4.2            // taller so full figure fills canvas
+          const targetHeight = 3.8            // safety padding to avoid cutting head/feet
           const scale = targetHeight / maxDim
           model.scale.setScalar(scale)
 
-          // Align feet to shadow disc at y = -2.0
+          // Align feet to shadow disc at y = -1.9
           model.position.x = -centre.x * scale
-          model.position.y = (-box.min.y) * scale - 2.0
+          model.position.y = (-box.min.y) * scale - 1.9
           model.position.z = -centre.z * scale
 
           model.traverse((child) => {
