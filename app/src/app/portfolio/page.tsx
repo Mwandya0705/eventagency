@@ -1,16 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
 import BigFooter from '@/components/BigFooter'
 import dynamic from 'next/dynamic'
 
 // Load ModelViewer client-side only (Three.js needs browser APIs)
 const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
-
-gsap.registerPlugin(ScrollTrigger)
 
 interface Project {
   id: number
@@ -97,35 +93,35 @@ export default function PortfolioPage() {
     return matchesSearch && matchesService && matchesClient && matchesYear
   })
 
-  // GSAP Entrance Animations for list items
+  // IntersectionObserver scroll-entrance animations (no GSAP dependency)
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      if (worksSectionRef.current) {
-        // GSAP context automatically tracks and cleans up its own ScrollTriggers on revert.
+    const section = worksSectionRef.current
+    if (!section) return
 
-        const elements = worksSectionRef.current.querySelectorAll('.animate-work-item')
-        if (elements.length > 0) {
-          gsap.fromTo(
-            elements,
-            { opacity: 0, y: 50 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              stagger: 0.1,
-              ease: 'power3.out',
-              scrollTrigger: {
-                trigger: worksSectionRef.current,
-                start: 'top 80%',
-                toggleActions: 'play none none none',
-              },
-            }
-          )
-        }
-      }
-    }, [viewMode, searchQuery, selectedService, selectedClient, selectedYear])
+    const elements = section.querySelectorAll('.animate-work-item')
+    elements.forEach((el) => {
+      (el as HTMLElement).style.opacity = '0'
+      ;(el as HTMLElement).style.transform = 'translateY(40px)'
+      ;(el as HTMLElement).style.transition = 'opacity 0.7s ease, transform 0.7s ease'
+    })
 
-    return () => ctx.revert()
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry, i) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              ;(entry.target as HTMLElement).style.opacity = '1'
+              ;(entry.target as HTMLElement).style.transform = 'translateY(0)'
+            }, i * 80)
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.08 }
+    )
+
+    elements.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
   }, [viewMode, searchQuery, selectedService, selectedClient, selectedYear])
 
   return (
