@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, Component, ReactNode } from 'react'
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { preloadModel } from '@/lib/modelCache'
 
 /* ─── Top-level React Error Boundary ──────────────────────────── */
 interface EBState { error: string | null }
@@ -102,14 +102,15 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
       pivot.add(placeholder)
     }
 
-    /* ── Load the GLB ── */
+    /* ── Load the GLB (from the shared preload cache when warm) ── */
     let loadedModel: THREE.Object3D | null = null
+    let cancelled = false
     if (modelReady) {
-      const loader = new GLTFLoader()
-      loader.load(
-        modelPath,
-        (gltf) => {
-          const model = gltf.scene
+      preloadModel(modelPath)
+        .then((gltf) => {
+          if (cancelled) return
+          // Clone so the cached gltf.scene stays reusable for future mounts.
+          const model = gltf.scene.clone(true)
 
           // Auto-centre and scale to fit
           const box = new THREE.Box3().setFromObject(model)
@@ -136,10 +137,8 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
           if (placeholder) pivot.remove(placeholder)
           pivot.add(model)
           loadedModel = model
-        },
-        undefined, // progress
-        (err) => console.warn('GLB load error (non-fatal):', err)
-      )
+        })
+        .catch((err) => console.warn('GLB load error (non-fatal):', err))
     }
 
     /* ── Orbit drag controls (pure pointer events) ── */
@@ -193,6 +192,7 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
 
     /* ── Cleanup ── */
     return () => {
+      cancelled = true
       cancelAnimationFrame(rafId)
       ro.disconnect()
       renderer.domElement.removeEventListener('pointerdown', onPointerDown)

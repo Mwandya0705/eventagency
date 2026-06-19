@@ -8,6 +8,19 @@ export default function Navbar() {
   const path = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // Warm the 3D model as soon as the user shows intent to visit /portfolio,
+  // so it's already parsed by the time the page mounts. Dynamic import keeps
+  // three.js out of the global bundle.
+  const warmPortfolioModel = () => {
+    import('@/lib/modelCache')
+      .then((m) => m.preloadModel('/models/squid_game_-_worker.glb'))
+      .catch(() => {})
+  }
+  const warmHandlers = (href: string) =>
+    href === '/portfolio'
+      ? { onMouseEnter: warmPortfolioModel, onFocus: warmPortfolioModel, onTouchStart: warmPortfolioModel }
+      : {}
+
   const navLinks = [
     { label: 'Featured Work', sub: '[6]',  href: '/' },
     { label: 'Portfolio',     sub: '[25]', href: '/portfolio' },
@@ -25,6 +38,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
+              {...warmHandlers(link.href)}
               className={`text-sm font-medium tracking-wide transition-opacity duration-200 hover:opacity-100 ${
                 path === link.href ? 'text-white opacity-100' : 'text-white opacity-80'
               }`}
@@ -86,6 +100,7 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
+              {...warmHandlers(link.href)}
               onClick={() => setMenuOpen(false)}
               className={`py-3 px-2 text-sm font-medium tracking-wide border-b border-white/10 last:border-0 transition-colors ${
                 path === link.href ? 'text-white' : 'text-white/70 hover:text-white'
