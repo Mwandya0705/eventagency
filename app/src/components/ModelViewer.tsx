@@ -49,9 +49,10 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
     /* ── Scene ── */
     const scene = new THREE.Scene()
 
-    /* ── Camera — pulled back so full figure is visible ── */
-    const camera = new THREE.PerspectiveCamera(45, mount.clientWidth / mount.clientHeight, 0.1, 1000)
-    camera.position.set(0, 1.5, 6.5)
+    /* ── Camera — centred on model so full figure shows head to toe ── */
+    const camera = new THREE.PerspectiveCamera(40, mount.clientWidth / mount.clientHeight, 0.1, 1000)
+    camera.position.set(0, 0.2, 7.5)
+    camera.lookAt(0, 0.1, 0)  // look at model centre
 
     /* ── Lights ── */
     const ambient = new THREE.AmbientLight(0xffffff, 0.7)

@@ -3,10 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Navbar from '@/components/Navbar'
 import BigFooter from '@/components/BigFooter'
-import dynamic from 'next/dynamic'
-
-// Load ModelViewer client-side only (Three.js needs browser APIs)
-const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
 
 interface Project {
   id: number
@@ -128,25 +124,21 @@ export default function PortfolioPage() {
     <div className="bg-[#0a0a1a] text-white min-h-screen selection:bg-blue-accent selection:text-white">
       <Navbar />
 
-      {/* Hero Section — Blue gradient like inspiration */}
-      <section className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-hidden"
+      {/* Hero Section — Blue gradient, PORTFOLIO text only */}
+      <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #1a6dff 0%, #0d4fd8 30%, #0a2a8a 65%, #06153d 100%)' }}
       >
-        {/* Subtle top-center radial glow */}
+        {/* Radial highlight at top */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(80,160,255,0.35),transparent)] pointer-events-none z-0" />
 
-        {/* Giant PORTFOLIO text — white, solid, filling full width */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-10 px-2">
-          <h1 className="font-display font-black uppercase leading-none tracking-tighter text-white"
-            style={{ fontSize: 'clamp(80px, 14vw, 200px)', opacity: 0.92 }}
+        {/* Giant PORTFOLIO text — very tall, bold, covering the screen */}
+        <div className="relative z-10 w-full text-center pointer-events-none select-none px-0">
+          <h1
+            className="font-display font-black uppercase leading-none tracking-tighter text-white w-full"
+            style={{ fontSize: 'clamp(80px, 20vw, 260px)', opacity: 1, letterSpacing: '-0.04em' }}
           >
             PORTFOLIO
           </h1>
-        </div>
-
-        {/* 3D Model — large, centered, overlapping text like the keychain */}
-        <div className="relative z-20 w-full flex items-center justify-center" style={{ marginTop: '8vh', height: '86vh' }}>
-          <ModelViewer modelPath="/models/squid_game_-_worker.glb" height="100%" modelReady={true} />
         </div>
 
         {/* Scroll indicator */}
