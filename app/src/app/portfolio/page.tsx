@@ -98,8 +98,7 @@ export default function PortfolioPage() {
   useEffect(() => {
     const ctx = gsap.context(() => {
       if (worksSectionRef.current) {
-        // Clear previous ScrollTriggers to prevent duplicates on state change
-        ScrollTrigger.getAll().forEach(t => t.kill())
+        // GSAP context automatically tracks and cleans up its own ScrollTriggers on revert.
 
         const elements = worksSectionRef.current.querySelectorAll('.animate-work-item')
         if (elements.length > 0) {
