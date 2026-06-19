@@ -1,154 +1,255 @@
 'use client'
 
-import { Suspense, useRef, Component, ReactNode } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei'
+import { useEffect, useRef, Component, ReactNode } from 'react'
 import * as THREE from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
-/* ─── Error boundary: catches missing / broken GLB gracefully ─── */
-interface EBState { hasError: boolean }
-class ModelErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, EBState> {
-  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+/* ─── Top-level React Error Boundary ──────────────────────────── */
+interface EBState { error: string | null }
+class SceneErrorBoundary extends Component<{ children: ReactNode }, EBState> {
+  constructor(props: { children: ReactNode }) {
     super(props)
-    this.state = { hasError: false }
+    this.state = { error: null }
   }
-  static getDerivedStateFromError() { return { hasError: true } }
+  static getDerivedStateFromError(e: Error) {
+    return { error: e.message }
+  }
   render() {
-    if (this.state.hasError) return this.props.fallback
+    if (this.state.error) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full gap-4 text-white/30">
+          <div className="w-16 h-16 border-2 border-blue-accent/30 rounded-full animate-spin border-t-blue-accent" />
+          <span className="text-[10px] font-mono tracking-widest uppercase">3D unavailable</span>
+        </div>
+      )
+    }
     return this.props.children
   }
 }
 
-/* ─── Placeholder shape when no model file is present ──────────── */
-function PlaceholderShape() {
-  const meshRef = useRef<THREE.Mesh>(null)
-  useFrame((_, delta) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.6
-      meshRef.current.rotation.x += delta * 0.2
+/* ─── Core Three.js canvas using a plain <canvas> element ─────── */
+function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady: boolean }) {
+  const mountRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const mount = mountRef.current
+    if (!mount) return
+
+    /* ── Renderer ── */
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setSize(mount.clientWidth, mount.clientHeight)
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.2
+    mount.appendChild(renderer.domElement)
+
+    /* ── Scene ── */
+    const scene = new THREE.Scene()
+
+    /* ── Camera ── */
+    const camera = new THREE.PerspectiveCamera(50, mount.clientWidth / mount.clientHeight, 0.1, 1000)
+    camera.position.set(0, 1.2, 4.5)
+
+    /* ── Lights ── */
+    const ambient = new THREE.AmbientLight(0xffffff, 0.7)
+    scene.add(ambient)
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.4)
+    dirLight.position.set(4, 8, 4)
+    dirLight.castShadow = true
+    dirLight.shadow.mapSize.width = 1024
+    dirLight.shadow.mapSize.height = 1024
+    scene.add(dirLight)
+
+    const rimLight = new THREE.PointLight(0x3B5BFF, 1.2, 20)
+    rimLight.position.set(-4, 4, -4)
+    scene.add(rimLight)
+
+    const fillLight = new THREE.PointLight(0xffffff, 0.4, 20)
+    fillLight.position.set(4, -2, 4)
+    scene.add(fillLight)
+
+    /* ── Ground shadow disc ── */
+    const shadowGeo = new THREE.CircleGeometry(1.4, 32)
+    const shadowMat = new THREE.MeshBasicMaterial({
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.35,
+    })
+    const shadowDisc = new THREE.Mesh(shadowGeo, shadowMat)
+    shadowDisc.rotation.x = -Math.PI / 2
+    shadowDisc.position.y = -1.55
+    scene.add(shadowDisc)
+
+    /* ── Pivot for rotation ── */
+    const pivot = new THREE.Group()
+    scene.add(pivot)
+
+    /* ── Placeholder: spinning icosahedron until model loads ── */
+    let placeholder: THREE.Mesh | null = null
+    if (!modelReady) {
+      const geo = new THREE.IcosahedronGeometry(0.9, 1)
+      const mat = new THREE.MeshStandardMaterial({
+        color: 0x3B5BFF,
+        metalness: 0.8,
+        roughness: 0.2,
+      })
+      placeholder = new THREE.Mesh(geo, mat)
+      pivot.add(placeholder)
     }
-  })
-  return (
-    <mesh ref={meshRef} castShadow>
-      <icosahedronGeometry args={[1.2, 1]} />
-      <meshStandardMaterial
-        color="#3B5BFF"
-        metalness={0.8}
-        roughness={0.2}
-        wireframe={false}
-      />
-    </mesh>
-  )
-}
 
-/* ─── The actual 3-D model ─────────────────────────────────────── */
-function Model({ url }: { url: string }) {
-  const { scene } = useGLTF(url)
-  const groupRef = useRef<THREE.Group>(null)
+    /* ── Load the GLB ── */
+    let loadedModel: THREE.Object3D | null = null
+    if (modelReady) {
+      const loader = new GLTFLoader()
+      loader.load(
+        modelPath,
+        (gltf) => {
+          const model = gltf.scene
 
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.4
+          // Auto-centre and scale to fit
+          const box = new THREE.Box3().setFromObject(model)
+          const size = box.getSize(new THREE.Vector3())
+          const centre = box.getCenter(new THREE.Vector3())
+
+          const maxDim = Math.max(size.x, size.y, size.z)
+          const targetHeight = 3.0            // world units tall
+          const scale = targetHeight / maxDim
+          model.scale.setScalar(scale)
+
+          // Shift model so its feet are at y=0 of the pivot
+          model.position.x = -centre.x * scale
+          model.position.y = (-box.min.y) * scale - 1.55  // align feet to shadow disc
+          model.position.z = -centre.z * scale
+
+          model.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+              child.castShadow = true
+              child.receiveShadow = true
+            }
+          })
+
+          if (placeholder) pivot.remove(placeholder)
+          pivot.add(model)
+          loadedModel = model
+        },
+        undefined, // progress
+        (err) => console.warn('GLB load error (non-fatal):', err)
+      )
     }
-  })
 
-  scene.traverse((child) => {
-    if ((child as THREE.Mesh).isMesh) {
-      child.castShadow = true
-      child.receiveShadow = true
+    /* ── Orbit drag controls (pure pointer events) ── */
+    let isDragging = false
+    let prevX = 0
+    let autoSpin = true
+    let autoSpinSpeed = 0.008   // radians per frame when idle
+
+    const onPointerDown = (e: PointerEvent) => {
+      isDragging = true
+      autoSpin = false
+      prevX = e.clientX
+      renderer.domElement.setPointerCapture(e.pointerId)
     }
-  })
+    const onPointerMove = (e: PointerEvent) => {
+      if (!isDragging) return
+      const dx = e.clientX - prevX
+      pivot.rotation.y += dx * 0.012
+      prevX = e.clientX
+    }
+    const onPointerUp = () => {
+      isDragging = false
+      // Resume auto-spin after 1.5 s of idle
+      setTimeout(() => { autoSpin = true }, 1500)
+    }
 
-  return (
-    <group ref={groupRef}>
-      <primitive object={scene} scale={1.6} position={[0, -1.5, 0]} />
-    </group>
-  )
+    renderer.domElement.addEventListener('pointerdown', onPointerDown)
+    renderer.domElement.addEventListener('pointermove', onPointerMove)
+    renderer.domElement.addEventListener('pointerup', onPointerUp)
+    renderer.domElement.addEventListener('pointerleave', onPointerUp)
+    renderer.domElement.style.touchAction = 'none'
+    renderer.domElement.style.cursor = 'grab'
+
+    /* ── Resize observer ── */
+    const ro = new ResizeObserver(() => {
+      if (!mount) return
+      renderer.setSize(mount.clientWidth, mount.clientHeight)
+      camera.aspect = mount.clientWidth / mount.clientHeight
+      camera.updateProjectionMatrix()
+    })
+    ro.observe(mount)
+
+    /* ── Render loop ── */
+    let rafId: number
+    const animate = () => {
+      rafId = requestAnimationFrame(animate)
+      if (autoSpin) pivot.rotation.y += autoSpinSpeed
+      renderer.render(scene, camera)
+    }
+    animate()
+
+    /* ── Cleanup ── */
+    return () => {
+      cancelAnimationFrame(rafId)
+      ro.disconnect()
+      renderer.domElement.removeEventListener('pointerdown', onPointerDown)
+      renderer.domElement.removeEventListener('pointermove', onPointerMove)
+      renderer.domElement.removeEventListener('pointerup', onPointerUp)
+      renderer.domElement.removeEventListener('pointerleave', onPointerUp)
+      renderer.dispose()
+      if (mount.contains(renderer.domElement)) {
+        mount.removeChild(renderer.domElement)
+      }
+      if (loadedModel) {
+        loadedModel.traverse((child) => {
+          const mesh = child as THREE.Mesh
+          if (mesh.isMesh) {
+            mesh.geometry?.dispose()
+            if (Array.isArray(mesh.material)) {
+              mesh.material.forEach((m) => m.dispose())
+            } else {
+              mesh.material?.dispose()
+            }
+          }
+        })
+      }
+    }
+  }, [modelPath, modelReady])
+
+  return <div ref={mountRef} className="w-full h-full" />
 }
 
-/* ─── Spinning ring while GLB is downloading ─────────────────── */
-function LoadingRing() {
-  const ref = useRef<THREE.Mesh>(null)
-  useFrame((_, delta) => { if (ref.current) ref.current.rotation.z += delta * 2 })
-  return (
-    <mesh ref={ref}>
-      <torusGeometry args={[0.7, 0.05, 16, 100]} />
-      <meshStandardMaterial color="#3B5BFF" />
-    </mesh>
-  )
-}
-
-/* ─── Scene – shared wrapper ────────────────────────────────── */
-function Scene({ modelPath, modelReady }: { modelPath: string; modelReady: boolean }) {
-  return (
-    <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 10, 5]} intensity={1.2} castShadow />
-      <pointLight position={[-5, 5, -5]} intensity={0.5} color="#3B5BFF" />
-      <Environment preset="city" />
-      <ContactShadows position={[0, -2.4, 0]} opacity={0.35} scale={8} blur={2} far={5} />
-
-      <Suspense fallback={<LoadingRing />}>
-        {modelReady ? (
-          <ModelErrorBoundary fallback={<PlaceholderShape />}>
-            <Model url={modelPath} />
-          </ModelErrorBoundary>
-        ) : (
-          <PlaceholderShape />
-        )}
-      </Suspense>
-
-      <OrbitControls
-        enablePan={false}
-        enableZoom={false}
-        minPolarAngle={Math.PI / 4}
-        maxPolarAngle={Math.PI / 1.6}
-      />
-    </>
-  )
-}
-
-/* ─── Public API ────────────────────────────────────────────────── */
+/* ─── Public component ─────────────────────────────────────────── */
 interface ModelViewerProps {
   modelPath?: string
   height?: number | string
-  /** Set to true only once the .glb has been uploaded to /public/models/ */
   modelReady?: boolean
 }
 
 export default function ModelViewer({
-  modelPath = '/models/squid-game-worker.glb',
-  height = 440,
+  modelPath = '/models/squid_game_-_worker.glb',
+  height = 500,
   modelReady = false,
 }: ModelViewerProps) {
   return (
     <div
       style={{ height }}
-      className="w-full relative select-none cursor-grab active:cursor-grabbing"
+      className="w-full relative select-none"
     >
-      <Canvas
-        shadows
-        camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
-      >
-        <Scene modelPath={modelPath} modelReady={modelReady} />
-      </Canvas>
+      <SceneErrorBoundary>
+        <ThreeCanvas modelPath={modelPath} modelReady={modelReady} />
+      </SceneErrorBoundary>
 
-      {/* Hint label */}
+      {/* Drag hint */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2 text-[10px] font-mono tracking-[0.3em] text-white/35 uppercase">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M18 11V6a2 2 0 0 0-4 0v0M14 10V4a2 2 0 0 0-4 0v6m0 0V2a2 2 0 0 0-4 0v10" />
           <path d="M6 12v2a6 6 0 0 0 12 0v-3" />
         </svg>
-        Drag to rotate
+        Drag to spin
       </div>
-
-      {!modelReady && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none text-[9px] font-mono text-white/25 tracking-widest uppercase">
-          3D model pending upload
-        </div>
-      )}
     </div>
   )
 }
