@@ -2,10 +2,10 @@ export default function Footer() {
   return (
     <footer className="fixed bottom-0 left-0 w-full z-50 px-6 md:px-12 py-4">
       <div className="flex items-center justify-between text-xs text-gray-light">
-        <span>&copy; 2026 Major All rights reserved.</span>
+        <span>&copy; 2026 Pamedia. All rights reserved.</span>
         <div className="flex items-center gap-6">
           <a
-            href="https://www.instagram.com/thiswasmajor/"
+            href="https://www.instagram.com/thiswaspamedia/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white transition-colors"
@@ -13,7 +13,7 @@ export default function Footer() {
             Instagram
           </a>
           <a
-            href="https://www.linkedin.com/company/major-media-agency/"
+            href="https://www.linkedin.com/company/pamedia-media-agency/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white transition-colors"

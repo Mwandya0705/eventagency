@@ -94,7 +94,7 @@ const brands: Brand[] = [
     video: storageUrl('videos', 'toyota-cover.mp4'),
     videos: [
       { src: storageUrl('videos', 'toyota-gr-supra-compressed.mp4'), title: 'Toyota GR Supra' },
-      { src: storageUrl('videos', 'toyota-land-cruiser.mp4'), title: 'Land Cruiser' },
+      { src: storageUrl('videos', 'toyota-land-cruiser-2.mp4'), title: 'Land Cruiser' },
       { src: storageUrl('videos', 'toyota-crown.mp4'),        title: 'Toyota Crown' },
       { src: storageUrl('videos', 'toyota-tacoma.mp4'),       title: 'Toyota Tacoma' },
     ],

@@ -3,7 +3,7 @@ import './globals.css'
 import SmoothScrollProvider from '@/components/SmoothScrollProvider'
 
 export const metadata: Metadata = {
-  title: 'Major Media Agency',
+  title: 'Pamedia Media Agency',
   description: 'A creative agency built for the modern era.',
 }
 
