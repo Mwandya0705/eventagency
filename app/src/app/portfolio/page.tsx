@@ -105,8 +105,8 @@ export default function PortfolioPage() {
     const elements = section.querySelectorAll('.animate-work-item')
     elements.forEach((el) => {
       (el as HTMLElement).style.opacity = '0'
-      ;(el as HTMLElement).style.transform = 'translateY(40px)'
-      ;(el as HTMLElement).style.transition = 'opacity 0.7s ease, transform 0.7s ease'
+        ; (el as HTMLElement).style.transform = 'translateY(40px)'
+        ; (el as HTMLElement).style.transition = 'opacity 0.7s ease, transform 0.7s ease'
     })
 
     const observer = new IntersectionObserver(
@@ -114,8 +114,8 @@ export default function PortfolioPage() {
         entries.forEach((entry, i) => {
           if (entry.isIntersecting) {
             setTimeout(() => {
-              ;(entry.target as HTMLElement).style.opacity = '1'
-              ;(entry.target as HTMLElement).style.transform = 'translateY(0)'
+              ; (entry.target as HTMLElement).style.opacity = '1'
+                ; (entry.target as HTMLElement).style.transform = 'translateY(0)'
             }, i * 80)
             observer.unobserve(entry.target)
           }
@@ -133,24 +133,24 @@ export default function PortfolioPage() {
       <Navbar />
 
       {/* Hero Section — Blue gradient, PORTFOLIO text & 3D model */}
-      <section className="relative h-[72vh] min-h-[580px] w-full flex flex-col items-center justify-center overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #1a6dff 0%, #0d4fd8 30%, #0a2a8a 65%, #06153d 100%)' }}
+      <section className="relative h-[85vh] min-h-[640px] w-full flex flex-col items-center justify-center overflow-hidden"
+        style={{ background: 'linear-gradient(180deg, rgba(10,10,26,0) 55%, #0a0a1a 100%), linear-gradient(165deg, #2b7fff 0%, #1a6dff 18%, #0d4fd8 38%, #0a2a8a 60%, #071a4d 80%, #0a0a1a 100%)' }}
       >
         {/* Radial highlight at top */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(80,160,255,0.35),transparent)] pointer-events-none z-0" />
 
-        {/* Giant PORTFOLIO text — very tall, bold, covering the screen */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-10">
+        {/* Giant PORTFOLIO text — sits high near the navbar, taller on large screens */}
+        <div className="absolute top-[31vh] lg:top-[22vh] left-1/2 -translate-x-1/2 w-full px-4 sm:px-8 text-center pointer-events-none select-none z-10">
           <h1
             className="font-display font-black uppercase leading-none tracking-tighter text-white/95 w-full"
-            style={{ fontSize: 'clamp(80px, 16vw, 240px)', letterSpacing: '-0.05em' }}
+            style={{ fontSize: 'clamp(40px, 22vw, 560px)', letterSpacing: '-0.05em' }}
           >
             PORTFOLIO
           </h1>
         </div>
 
-        {/* 3D Model Container — shifted up and scaled so it's fully visible */}
-        <div className="absolute top-[6vh] bottom-[14vh] left-1/2 -translate-x-1/2 w-full max-w-4xl z-20 pointer-events-none">
+        {/* 3D Model Container — fills most of the hero, leaving only room for the two bottom labels */}
+        <div className="absolute top-[2vh] bottom-[7vh] left-1/2 -translate-x-1/2 w-full max-w-4xl z-20 pointer-events-none">
           <div className="w-full h-full pointer-events-auto">
             {mounted && (
               <ModelViewer
@@ -163,18 +163,20 @@ export default function PortfolioPage() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
-          <div className="text-[10px] font-mono tracking-[0.4em] uppercase text-white/60 animate-pulse">
-            ⇅ Scroll For More ⇅
+        <div className="absolute bottom-[5vh] left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2 whitespace-nowrap text-[10px] sm:text-xs font-mono tracking-[0.3em] sm:tracking-[0.4em] uppercase text-white/80 animate-pulse">
+            <span aria-hidden>⇅</span>
+            <span>Scroll For More</span>
+            <span aria-hidden>⇅</span>
           </div>
         </div>
       </section>
 
       {/* Middle Part: Works Layout */}
       <section className="relative max-w-7xl mx-auto px-6 md:px-12 py-24 z-30">
-        
+
         {/* Filter & View Toolbar (Image 2 style) */}
-        <div 
+        <div
           ref={dropdownRef}
           className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-white/10 mb-16"
         >
@@ -186,9 +188,8 @@ export default function PortfolioPage() {
               <button
                 onClick={() => setViewMode('card')}
                 aria-label="Card View"
-                className={`p-1.5 rounded-md transition-colors ${
-                  viewMode === 'card' ? 'bg-blue-accent text-white' : 'text-white/40 hover:text-white/80'
-                }`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'card' ? 'bg-blue-accent text-white' : 'text-white/40 hover:text-white/80'
+                  }`}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -200,9 +201,8 @@ export default function PortfolioPage() {
               <button
                 onClick={() => setViewMode('list')}
                 aria-label="List View"
-                className={`p-1.5 rounded-md transition-colors ${
-                  viewMode === 'list' ? 'bg-blue-accent text-white' : 'text-white/40 hover:text-white/80'
-                }`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-blue-accent text-white' : 'text-white/40 hover:text-white/80'
+                  }`}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="3" y1="6" x2="21" y2="6" />
@@ -215,9 +215,8 @@ export default function PortfolioPage() {
               <button
                 onClick={() => setViewMode('grid')}
                 aria-label="Grid View"
-                className={`p-1.5 rounded-md transition-colors ${
-                  viewMode === 'grid' ? 'bg-blue-accent text-white' : 'text-white/40 hover:text-white/80'
-                }`}
+                className={`p-1.5 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-blue-accent text-white' : 'text-white/40 hover:text-white/80'
+                  }`}
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -256,16 +255,15 @@ export default function PortfolioPage() {
 
             {/* Dropdown filters */}
             <div className="flex items-center gap-2">
-              
+
               {/* Service Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => { setServiceOpen(!serviceOpen); setClientOpen(false); setYearOpen(false) }}
-                  className={`px-4 py-2 border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                    selectedService !== 'All' 
-                      ? 'border-blue-accent bg-blue-accent/10 text-white' 
-                      : 'border-white/10 bg-white/5 text-white/70 hover:text-white'
-                  }`}
+                  className={`px-4 py-2 border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${selectedService !== 'All'
+                    ? 'border-blue-accent bg-blue-accent/10 text-white'
+                    : 'border-white/10 bg-white/5 text-white/70 hover:text-white'
+                    }`}
                 >
                   <span>{selectedService === 'All' ? 'Service' : selectedService}</span>
                   <span className={`transition-transform duration-200 ${serviceOpen ? 'rotate-180' : ''}`}>▾</span>
@@ -276,9 +274,8 @@ export default function PortfolioPage() {
                       <button
                         key={s}
                         onClick={() => { setSelectedService(s); setServiceOpen(false) }}
-                        className={`w-full text-left px-4 py-2 hover:bg-white/5 transition-colors ${
-                          selectedService === s ? 'text-blue-accent font-bold' : 'text-white/60'
-                        }`}
+                        className={`w-full text-left px-4 py-2 hover:bg-white/5 transition-colors ${selectedService === s ? 'text-blue-accent font-bold' : 'text-white/60'
+                          }`}
                       >
                         {s}
                       </button>
@@ -291,11 +288,10 @@ export default function PortfolioPage() {
               <div className="relative">
                 <button
                   onClick={() => { setClientOpen(!clientOpen); setServiceOpen(false); setYearOpen(false) }}
-                  className={`px-4 py-2 border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                    selectedClient !== 'All' 
-                      ? 'border-blue-accent bg-blue-accent/10 text-white' 
-                      : 'border-white/10 bg-white/5 text-white/70 hover:text-white'
-                  }`}
+                  className={`px-4 py-2 border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${selectedClient !== 'All'
+                    ? 'border-blue-accent bg-blue-accent/10 text-white'
+                    : 'border-white/10 bg-white/5 text-white/70 hover:text-white'
+                    }`}
                 >
                   <span>{selectedClient === 'All' ? 'Client' : selectedClient}</span>
                   <span className={`transition-transform duration-200 ${clientOpen ? 'rotate-180' : ''}`}>▾</span>
@@ -306,9 +302,8 @@ export default function PortfolioPage() {
                       <button
                         key={c}
                         onClick={() => { setSelectedClient(c); setClientOpen(false) }}
-                        className={`w-full text-left px-4 py-2 hover:bg-white/5 transition-colors ${
-                          selectedClient === c ? 'text-blue-accent font-bold' : 'text-white/60'
-                        }`}
+                        className={`w-full text-left px-4 py-2 hover:bg-white/5 transition-colors ${selectedClient === c ? 'text-blue-accent font-bold' : 'text-white/60'
+                          }`}
                       >
                         {c}
                       </button>
@@ -321,11 +316,10 @@ export default function PortfolioPage() {
               <div className="relative">
                 <button
                   onClick={() => { setYearOpen(!yearOpen); setServiceOpen(false); setClientOpen(false) }}
-                  className={`px-4 py-2 border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
-                    selectedYear !== 'All' 
-                      ? 'border-blue-accent bg-blue-accent/10 text-white' 
-                      : 'border-white/10 bg-white/5 text-white/70 hover:text-white'
-                  }`}
+                  className={`px-4 py-2 border rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${selectedYear !== 'All'
+                    ? 'border-blue-accent bg-blue-accent/10 text-white'
+                    : 'border-white/10 bg-white/5 text-white/70 hover:text-white'
+                    }`}
                 >
                   <span>{selectedYear === 'All' ? 'Year' : selectedYear}</span>
                   <span className={`transition-transform duration-200 ${yearOpen ? 'rotate-180' : ''}`}>▾</span>
@@ -336,9 +330,8 @@ export default function PortfolioPage() {
                       <button
                         key={y}
                         onClick={() => { setSelectedYear(y); setYearOpen(false) }}
-                        className={`w-full text-left px-4 py-2 hover:bg-white/5 transition-colors ${
-                          selectedYear === y ? 'text-blue-accent font-bold' : 'text-white/60'
-                        }`}
+                        className={`w-full text-left px-4 py-2 hover:bg-white/5 transition-colors ${selectedYear === y ? 'text-blue-accent font-bold' : 'text-white/60'
+                          }`}
                       >
                         {y}
                       </button>
@@ -353,7 +346,7 @@ export default function PortfolioPage() {
 
         {/* Works Content Grid/List/Card */}
         <div ref={worksSectionRef} className="space-y-4">
-          
+
           {/* 1. SINGLE CARD VIEW (Matches Image 2 layout) */}
           {viewMode === 'card' && (
             <div className="flex flex-col gap-24">
@@ -467,10 +460,10 @@ export default function PortfolioPage() {
                     alt={project.title}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out"
                   />
-                  
+
                   {/* Gradient overlays */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent opacity-70 group-hover:opacity-90 transition-opacity duration-500" />
-                  
+
                   {/* Top indicators */}
                   <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
                     <span className="text-blue-accent text-[10px] font-bold uppercase tracking-wider bg-black/40 backdrop-blur-md px-2 py-1 rounded">
