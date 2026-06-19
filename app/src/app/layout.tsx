@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ViewTransitions } from 'next-view-transitions'
 import SmoothScrollProvider from '@/components/SmoothScrollProvider'
 
 export const metadata: Metadata = {
@@ -13,6 +14,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
+    <ViewTransitions>
     <html lang="en">
       <head>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -29,5 +31,6 @@ export default function RootLayout({
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>
+    </ViewTransitions>
   )
 }

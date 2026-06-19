@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, Component, ReactNode } from 'react'
 import * as THREE from 'three'
-import { preloadModel } from '@/lib/modelCache'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+// Cache the fetched GLB by URL so re-mounts / navigations skip the network.
+// (preloadModel in Navbar warms this on hover, so the file is ready on entry.)
+THREE.Cache.enabled = true
 
 /* ─── Top-level React Error Boundary ──────────────────────────── */
 interface EBState { error: string | null }
@@ -102,24 +106,27 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
       pivot.add(placeholder)
     }
 
-    /* ── Load the GLB (from the shared preload cache when warm) ── */
+    /* ── Load the GLB (file cached by THREE.Cache; warmed on nav hover) ── */
     let loadedModel: THREE.Object3D | null = null
     let cancelled = false
     if (modelReady) {
-      preloadModel(modelPath)
-        .then((gltf) => {
+      const loader = new GLTFLoader()
+      loader.load(
+        modelPath,
+        (gltf) => {
           if (cancelled) return
-          // Clone so the cached gltf.scene stays reusable for future mounts.
-          const model = gltf.scene.clone(true)
+          const model = gltf.scene
 
           // Auto-centre and scale to fit
           const box = new THREE.Box3().setFromObject(model)
           const size = box.getSize(new THREE.Vector3())
           const centre = box.getCenter(new THREE.Vector3())
 
-          const maxDim = Math.max(size.x, size.y, size.z)
-          const targetHeight = 3.8            // safety padding to avoid cutting head/feet
-          const scale = targetHeight / maxDim
+          // Scale by HEIGHT (size.y) so the figure fills the frame regardless
+          // of arm span / width. ~4.6 fills most of the camera view
+          // (~5.8 units tall at this distance) without cutting head or feet.
+          const targetHeight = 4.6
+          const scale = targetHeight / size.y
           model.scale.setScalar(scale)
 
           // Align feet to shadow disc at y = -1.9
@@ -137,8 +144,10 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
           if (placeholder) pivot.remove(placeholder)
           pivot.add(model)
           loadedModel = model
-        })
-        .catch((err) => console.warn('GLB load error (non-fatal):', err))
+        },
+        undefined, // progress
+        (err) => console.warn('GLB load error (non-fatal):', err)
+      )
     }
 
     /* ── Orbit drag controls (pure pointer events) ── */
@@ -204,6 +213,7 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
         mount.removeChild(renderer.domElement)
       }
       if (loadedModel) {
+        pivot.remove(loadedModel)
         loadedModel.traverse((child) => {
           const mesh = child as THREE.Mesh
           if (mesh.isMesh) {

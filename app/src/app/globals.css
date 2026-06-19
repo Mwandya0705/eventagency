@@ -154,12 +154,50 @@
   .text-glow {
     animation: glow 3s ease-in-out infinite;
   }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 28s linear infinite;
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* ── Page slide transition (next-view-transitions) ──────────────
+   Old page slides out to the left, new page slides in from the right. */
+::view-transition-group(root) {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+::view-transition-old(root) {
+  animation: 0.55s cubic-bezier(0.4, 0, 0.2, 1) both page-slide-out-left;
+}
+::view-transition-new(root) {
+  animation: 0.55s cubic-bezier(0.4, 0, 0.2, 1) both page-slide-in-right;
+}
+@keyframes page-slide-out-left {
+  to { transform: translateX(-100%); }
+}
+@keyframes page-slide-in-right {
+  from { transform: translateX(100%); }
 }
 
 @media (max-width: 768px) {

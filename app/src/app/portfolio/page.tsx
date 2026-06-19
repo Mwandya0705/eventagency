@@ -172,8 +172,8 @@ export default function PortfolioPage() {
         </div>
       </section>
 
-      {/* Middle Part: Works Layout */}
-      <section className="relative max-w-7xl mx-auto px-6 md:px-12 py-24 z-30">
+      {/* Middle Part: Works Layout — full width */}
+      <section className="relative w-full px-6 md:px-12 py-24 z-30">
 
         {/* Filter & View Toolbar (Image 2 style) */}
         <div
