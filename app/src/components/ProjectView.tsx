@@ -100,7 +100,7 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
       style={{ height: '100dvh' }}
       aria-hidden={!open}
     >
-      {/* Main player — object-contain shows full video on all sizes */}
+      {/* Main player — covers the screen (full-bleed) like the reference */}
       <video
         ref={videoRef}
         key={selectedVideo || 'none'}
@@ -108,69 +108,60 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
         controls
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-contain object-center bg-black"
+        className="absolute inset-0 w-full h-full object-cover object-center bg-black"
       />
 
       {/* Top gradient */}
       <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-10" />
 
-      {/* Top bar: Back · Title · Next */}
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 md:gap-8 px-3 max-w-[95vw]">
-        {/* Back */}
-        <button
-          onClick={onClose}
-          className="flex min-w-[52px] md:min-w-[120px] items-center gap-1 text-white/80 hover:text-white text-[9px] md:text-xs uppercase tracking-[0.2em] transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
-        >
-          <span className="text-lg leading-none">←</span>
-          <span className="hidden sm:inline">Back</span>
-        </button>
+      {/* Bottom gradient for legibility over the controls/title */}
+      <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-t from-black/75 to-transparent pointer-events-none z-10" />
 
-        {/* Title */}
-        <div className="text-center pointer-events-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
-          <h2 className="font-display text-sm sm:text-base md:text-2xl font-bold uppercase text-white tracking-wide leading-none whitespace-nowrap">
+      {/* Back (top-left) */}
+      <button
+        onClick={onClose}
+        className="absolute top-3 left-3 md:top-5 md:left-6 z-20 flex items-center gap-1.5 text-white/80 hover:text-white text-[10px] md:text-xs uppercase tracking-[0.2em] transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
+      >
+        <span className="text-xl leading-none">←</span>
+        <span className="hidden sm:inline">Back</span>
+      </button>
+
+      {/* Title · arrows · meta — lower-center, like the reference */}
+      <div className="absolute bottom-20 md:bottom-24 inset-x-0 z-20 flex flex-col items-center gap-3 px-6 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
+        <div className="flex items-center justify-center gap-5 md:gap-8 w-full">
+          <button
+            onClick={() => hasPrev && onNavigate(current - 1)}
+            aria-label="Previous project"
+            disabled={!hasPrev}
+            className={`text-3xl md:text-4xl leading-none transition-colors ${
+              hasPrev ? 'text-white/80 hover:text-white' : 'text-white/0 pointer-events-none'
+            }`}
+          >
+            ‹
+          </button>
+          <h2 className="font-display text-[12vw] md:text-5xl font-bold uppercase text-white tracking-wide leading-none text-center whitespace-nowrap">
             {brand.name}
           </h2>
-          <p className="text-white/70 text-[9px] sm:text-[10px] md:text-sm mt-0.5 whitespace-nowrap">
-            {brand.category} · {brand.year}
-          </p>
+          <button
+            onClick={() => hasNext && onNavigate(current + 1)}
+            aria-label="Next project"
+            disabled={!hasNext}
+            className={`text-3xl md:text-4xl leading-none transition-colors ${
+              hasNext ? 'text-white/80 hover:text-white' : 'text-white/0 pointer-events-none'
+            }`}
+          >
+            ›
+          </button>
         </div>
-
-        {/* Next project */}
-        <div className="flex min-w-[52px] md:min-w-[120px] justify-end">
-          {hasNext && (
-            <button
-              onClick={() => onNavigate(current + 1)}
-              className="text-right text-white/80 hover:text-white transition-colors drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]"
-            >
-              <div className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-white/50">Next</div>
-              <div className="text-[10px] md:text-base whitespace-nowrap">{brands[current + 1].name} →</div>
-            </button>
-          )}
+        <div className="flex items-center gap-3 text-white/80 text-[11px] md:text-sm uppercase tracking-[0.25em]">
+          <span>{brand.category}</span>
+          <span className="w-10 md:w-20 h-px bg-white/40" />
+          <span className="tabular-nums">{brand.year}</span>
         </div>
       </div>
 
-      {/* Side arrows */}
-      {hasPrev && (
-        <button
-          onClick={() => onNavigate(current - 1)}
-          aria-label="Previous project"
-          className="absolute left-2 md:left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white/80 hover:text-white hover:bg-black/60 transition-colors flex items-center justify-center text-2xl"
-        >
-          ‹
-        </button>
-      )}
-      {hasNext && (
-        <button
-          onClick={() => onNavigate(current + 1)}
-          aria-label="Next project"
-          className="absolute right-2 md:right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-11 md:h-11 rounded-full bg-black/40 backdrop-blur-md border border-white/15 text-white/80 hover:text-white hover:bg-black/60 transition-colors flex items-center justify-center text-2xl"
-        >
-          ›
-        </button>
-      )}
-
-      {/* Clip rail — smaller thumbnails on mobile */}
-      <div className="group/rail absolute right-3 md:right-6 bottom-16 md:bottom-20 z-20 flex flex-col items-end gap-2 opacity-60 hover:opacity-100 transition-opacity duration-300">
+      {/* Clip rail — vertical-center right so it stays clear of the title & controls */}
+      <div className="group/rail absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 flex flex-col items-end gap-2 opacity-50 hover:opacity-100 transition-opacity duration-300">
         <span className="text-white/50 text-[9px] md:text-[10px] uppercase tracking-[0.25em] text-right pr-1">
           Films
         </span>

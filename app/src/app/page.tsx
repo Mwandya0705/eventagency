@@ -96,7 +96,7 @@ const brands: Brand[] = [
 ]
 
 const N = brands.length
-const COVER_HOLD_MS = 6000
+const COVER_HOLD_MS = 3000
 const SCROLL_BAND = 0.3
 
 export default function Home() {
@@ -294,26 +294,21 @@ export default function Home() {
             <div className="absolute inset-0 z-20 pointer-events-none">
               <div className="absolute inset-0 bg-black/25" />
 
-              {/* Center brand label */}
+              {/* Center brand label — category / title / year stacked, like the reference */}
               <div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center px-4 transition-opacity duration-500 ease-out"
                 style={{ opacity: coverVisible ? 1 : 0 }}
               >
-                {/* Responsive font: very small on xs, larger on md+ */}
-                <h1 className="font-display text-[11vw] sm:text-[10vw] md:text-[9vw] font-bold uppercase text-white leading-[0.85] drop-shadow-[0_4px_40px_rgba(0,0,0,0.6)]">
+                <span className="block text-white/80 text-[11px] sm:text-xs md:text-base uppercase tracking-[0.3em] mb-3 md:mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+                  {brands[active].category}
+                </span>
+                <h1 className="font-display text-[13vw] sm:text-[11vw] md:text-[9vw] font-bold uppercase text-white leading-[0.85] drop-shadow-[0_4px_40px_rgba(0,0,0,0.6)]">
                   {brands[active].name}
                 </h1>
-                <div className="mt-3 flex items-center justify-center gap-2 text-white/70 text-[9px] md:text-xs uppercase tracking-[0.3em]">
-                  <span className="text-base leading-none">⇅</span> Scroll
-                </div>
+                <span className="block text-white/80 text-sm md:text-lg tabular-nums mt-4 md:mt-5 drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+                  {brands[active].year}
+                </span>
               </div>
-
-              <span className="absolute bottom-28 left-4 md:left-12 text-white/80 text-xs md:text-base">
-                {brands[active].category}
-              </span>
-              <span className="absolute bottom-28 right-4 md:right-12 text-white/80 text-xs md:text-base tabular-nums">
-                {brands[active].year}
-              </span>
             </div>
 
             {/* Brand strip — top on mobile, bottom on desktop */}
