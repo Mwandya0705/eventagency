@@ -9,11 +9,11 @@ export default function BigFooter() {
       style={{ background: 'linear-gradient(180deg, #06153d 0%, #0a2a8a 50%, #0d4fd8 100%)' }}
     >
       {/* ── Bottom links & copyright — compact ── */}
-      <div className="px-6 md:px-12 py-8">
+      <div className="px-6 md:px-12 py-20 md:py-28">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
 
           {/* Brand */}
-          <h2 className="font-display text-3xl md:text-4xl font-black uppercase tracking-tighter text-white leading-none">
+          <h2 className="font-display text-4xl md:text-5xl font-black uppercase tracking-tighter text-white leading-none">
             PAMEDIA
           </h2>
 
@@ -48,7 +48,7 @@ export default function BigFooter() {
         </div>
 
         {/* Copyright bar */}
-        <div className="max-w-7xl mx-auto mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-white/35 font-mono tracking-wider">
+        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-white/35 font-mono tracking-wider">
           <span>© 2026 Pamedia Media Agency — All Rights Reserved</span>
           <div className="flex items-center gap-5">
             <span className="hover:text-white/70 transition-colors cursor-pointer">Privacy Policy</span>

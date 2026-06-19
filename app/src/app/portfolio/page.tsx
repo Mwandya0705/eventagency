@@ -133,7 +133,7 @@ export default function PortfolioPage() {
       <Navbar />
 
       {/* Hero Section — Blue gradient, PORTFOLIO text & 3D model */}
-      <section className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden"
+      <section className="relative h-[72vh] min-h-[580px] w-full flex flex-col items-center justify-center overflow-hidden"
         style={{ background: 'linear-gradient(160deg, #1a6dff 0%, #0d4fd8 30%, #0a2a8a 65%, #06153d 100%)' }}
       >
         {/* Radial highlight at top */}
@@ -143,7 +143,7 @@ export default function PortfolioPage() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center pointer-events-none select-none z-10">
           <h1
             className="font-display font-black uppercase leading-none tracking-tighter text-white/95 w-full"
-            style={{ fontSize: 'clamp(90px, 22vw, 320px)', letterSpacing: '-0.05em' }}
+            style={{ fontSize: 'clamp(80px, 16vw, 240px)', letterSpacing: '-0.05em' }}
           >
             PORTFOLIO
           </h1>
