@@ -146,7 +146,7 @@ export default function PortfolioPage() {
 
         {/* 3D Model Container — drops in the Squid Game Worker GLB */}
         <div className="relative z-20 w-full max-w-xl mt-8 flex items-center justify-center">
-          <ModelViewer modelPath="/models/squid-game-worker.glb" height={440} modelReady={false} />
+          <ModelViewer modelPath="/models/squid_game_-_worker.glb" height={440} modelReady={true} />
         </div>
 
         {/* Scroll indicator at the bottom */}
