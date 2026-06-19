@@ -5,7 +5,10 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
 import BigFooter from '@/components/BigFooter'
-import Keychain from '@/components/Keychain'
+import dynamic from 'next/dynamic'
+
+// Load ModelViewer client-side only (Three.js needs browser APIs)
+const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -141,9 +144,9 @@ export default function PortfolioPage() {
           </h1>
         </div>
 
-        {/* 3D Keychain Container */}
-        <div className="relative z-20 w-full max-w-lg mt-16 flex items-center justify-center">
-          <Keychain />
+        {/* 3D Model Container — drops in the Squid Game Worker GLB */}
+        <div className="relative z-20 w-full max-w-xl mt-8 flex items-center justify-center">
+          <ModelViewer modelPath="/models/squid-game-worker.glb" height={440} />
         </div>
 
         {/* Scroll indicator at the bottom */}
