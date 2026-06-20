@@ -182,7 +182,7 @@ export default function About() {
             trigger: btsRef.current,
             start: 'top top', // title sits pinned first, then the columns roll up
             end: 'bottom bottom',
-            scrub: 0.8,
+            scrub: 1.3, // heavier smoothing = silkier, less abrupt
           },
         })
 
@@ -191,8 +191,8 @@ export default function About() {
           tl.fromTo(
             col,
             { yPercent: 100 },
-            { yPercent: 0, ease: 'none', duration: 0.8 },
-            order * 0.08 // small offset keeps the cascade subtle and controlled
+            { yPercent: 0, ease: 'power2.out', duration: 0.9 },
+            order * 0.07 // small offset keeps the cascade subtle and controlled
           )
         })
 
@@ -308,7 +308,7 @@ export default function About() {
       </section>
 
       {/* Services */}
-      <section className="px-6 md:px-12 py-16">
+      <section className="px-6 md:px-12 pt-16 pb-4">
         <div className="flex items-end justify-between mb-12">
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase text-white ml-1 md:ml-16">
             Services
@@ -386,8 +386,8 @@ export default function About() {
       </section>
 
       {/* Behind the Scenes — pinned, 5-column cascade gallery. */}
-      <section ref={btsRef} className="relative h-[180vh]">
-        <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-3 sm:px-6">
+      <section ref={btsRef} className="relative h-[150vh]">
+        <div className="sticky top-0 h-[150vh] overflow-hidden flex items-center justify-center px-3 sm:px-6">
           {/* Giant title — peeks around the grid in the side margins */}
           <h2
             ref={btsTitleRef}
@@ -398,7 +398,7 @@ export default function About() {
 
           {/* Square-card grid: 5 columns × 4 square rows, centred with side margins.
               The 5:4 box + square cells keeps every image square at any screen size. */}
-          <div className="relative z-10 mx-auto flex gap-2 aspect-[5/4] w-full h-auto md:h-full md:w-auto max-w-full max-h-full">
+          <div className="relative z-10 mx-auto flex gap-2 aspect-[5/4] w-full h-auto md:h-full md:w-auto max-w-full max-h-[380vh]">
             {galleryColumns.map((col, i) => (
               <div
                 key={i}
