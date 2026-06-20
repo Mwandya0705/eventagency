@@ -28,8 +28,8 @@ export default function Contact() {
 
       gsap.fromTo(
         formRef.current,
-        { opacity: 0, x: 40 },
-        { opacity: 1, x: 0, duration: 0.8, ease: 'power3.out', delay: 0.5 }
+        { opacity: 0, y: 40 },
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 0.45 }
       )
     })
 
@@ -50,37 +50,49 @@ export default function Contact() {
   }
 
   const inputClass =
-    'w-full bg-[#0A0A0A] border border-gray-mid rounded-lg px-4 py-3.5 text-white text-sm placeholder-gray-light focus:outline-none focus:border-blue-accent transition-colors'
+    'w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3.5 text-white text-sm placeholder-white/40 focus:outline-none focus:border-blue-glow focus:bg-white/[0.07] transition-colors'
 
   return (
-    <div className="bg-black min-h-screen">
+    <div
+      className="relative min-h-screen overflow-hidden"
+      /* Blue colour transition: dark at the top, blue glows rising from the lower corners */
+      style={{
+        background:
+          'radial-gradient(90% 90% at 12% 88%, rgba(47,123,255,0.55) 0%, transparent 55%),' +
+          'radial-gradient(95% 95% at 92% 70%, rgba(29,78,216,0.45) 0%, transparent 60%),' +
+          'linear-gradient(160deg, #05070f 0%, #07112e 42%, #0a2576 100%)',
+      }}
+    >
       <Navbar />
 
-      <section className="min-h-screen flex items-center px-6 md:px-12 pt-24 pb-20">
-        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          {/* Left Column */}
-          <div ref={heroRef} className="lg:sticky lg:top-32">
-            <h1 className="animate-in font-display text-[12vw] lg:text-[8vw] font-bold uppercase text-white leading-[0.85]">
+      <section className="relative min-h-screen flex items-center px-6 md:px-12 pt-28 pb-28 md:pb-24">
+        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          {/* Left — heading */}
+          <div ref={heroRef} className="lg:pr-8">
+            <h1 className="animate-in font-display font-bold uppercase text-[#d8e6ff] leading-[0.85] tracking-tight text-[16vw] sm:text-[13vw] lg:text-[8.5vw]">
               Let&apos;s Build
             </h1>
-            <p className="animate-in mt-8 text-gray-light text-base leading-relaxed max-w-md">
+            <p className="animate-in mt-6 md:mt-8 text-white/70 text-base md:text-lg leading-relaxed max-w-md">
               Whether it&apos;s to discuss a project, explore our services, or join the team, reach
-              out and start the conversation. Let&apos;s make it Major.
+              out and start the conversation. Let&apos;s make it Pamedia.
             </p>
           </div>
 
-          {/* Right Column - Form */}
-          <div ref={formRef} className="bg-gray-dark border border-gray-mid rounded-2xl p-8 md:p-12">
-            <div className="flex items-center justify-between mb-8">
+          {/* Right — form card */}
+          <div
+            ref={formRef}
+            className="bg-black/55 backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 md:p-10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]"
+          >
+            <div className="flex items-center justify-between mb-7 md:mb-8">
               <h2 className="text-white text-lg font-medium">Contact Us</h2>
               <svg
-                width="28"
-                height="28"
+                width="26"
+                height="26"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
-                className="text-gray-light"
+                className="text-white/60"
               >
                 <circle cx="12" cy="12" r="10" />
                 <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
@@ -88,7 +100,7 @@ export default function Contact() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                   type="text"
                   name="name"
@@ -123,7 +135,7 @@ export default function Contact() {
                 name="hearAbout"
                 value={formData.hearAbout}
                 onChange={handleChange}
-                className={`${inputClass} appearance-none cursor-pointer`}
+                className={`${inputClass} appearance-none cursor-pointer ${formData.hearAbout ? 'text-white' : 'text-white/40'}`}
               >
                 <option value="" disabled>
                   How did you hear about us?
@@ -139,7 +151,7 @@ export default function Contact() {
                 name="budget"
                 value={formData.budget}
                 onChange={handleChange}
-                className={`${inputClass} appearance-none cursor-pointer`}
+                className={`${inputClass} appearance-none cursor-pointer ${formData.budget ? 'text-white' : 'text-white/40'}`}
               >
                 <option value="" disabled>
                   Estimated Budget?

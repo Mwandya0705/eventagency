@@ -82,12 +82,13 @@ const services = [
 ]
 
 // Five columns of behind-the-scenes imagery (placeholders — swap with real BTS shots).
+// 4 rows per column so each card is tall while still filling the viewport exactly.
 const galleryColumns = [
-  ['/images/portfolio-1.jpg', '/images/card-1.jpg', '/images/portfolio-6.jpg', '/images/card-4.jpg', '/images/portfolio-9.jpg'],
-  ['/images/card-2.jpg', '/images/portfolio-2.jpg', '/images/card-5.jpg', '/images/portfolio-7.jpg', '/images/card-6.jpg'],
-  ['/images/portfolio-3.jpg', '/images/card-3.jpg', '/images/portfolio-8.jpg', '/images/portfolio-4.jpg', '/images/card-1.jpg'],
-  ['/images/card-4.jpg', '/images/portfolio-5.jpg', '/images/card-2.jpg', '/images/portfolio-9.jpg', '/images/portfolio-3.jpg'],
-  ['/images/portfolio-6.jpg', '/images/card-5.jpg', '/images/portfolio-1.jpg', '/images/card-3.jpg', '/images/portfolio-7.jpg'],
+  ['/images/portfolio-1.jpg', '/images/card-1.jpg', '/images/portfolio-6.jpg', '/images/card-4.jpg'],
+  ['/images/card-2.jpg', '/images/portfolio-2.jpg', '/images/card-5.jpg', '/images/portfolio-7.jpg'],
+  ['/images/portfolio-3.jpg', '/images/card-3.jpg', '/images/portfolio-8.jpg', '/images/portfolio-4.jpg'],
+  ['/images/card-4.jpg', '/images/portfolio-5.jpg', '/images/card-2.jpg', '/images/portfolio-9.jpg'],
+  ['/images/portfolio-6.jpg', '/images/card-5.jpg', '/images/portfolio-1.jpg', '/images/card-3.jpg'],
 ]
 
 // Client roster for the "Shaping culture together" wall (swap text for real logo <img>s).
@@ -189,18 +190,18 @@ export default function About() {
           tl.fromTo(
             col,
             { yPercent: 100 },
-            { yPercent: 0, ease: 'power2.out', duration: 0.5 },
-            order * 0.07 // small offset keeps the cascade subtle and controlled
+            { yPercent: 0, ease: 'power2.out', duration: 0.82 },
+            order * 0.06 // small offset keeps the cascade subtle and controlled
           )
         })
-        // Columns finish rising by ~0.64; the remaining scroll holds the leveled,
-        // full-bleed grid on screen before it hands off to the next section.
+        // Columns keep rising until ~0.94 of the scroll, so the slide-in continues
+        // most of the way down to the next section.
 
         // Title fades back once the imagery has overtaken it
         tl.fromTo(
           btsTitleRef.current,
           { opacity: 1, scale: 1.03 },
-          { opacity: 0.3, scale: 1, ease: 'none', duration: 0.5 },
+          { opacity: 0.3, scale: 1, ease: 'none', duration: 0.7 },
           0.1
         )
       }
@@ -385,10 +386,8 @@ export default function About() {
         </div>
       </section>
 
-      {/* Behind the Scenes — pinned, 5-column cascade gallery.
-          The pinned area is exactly one screen tall (the 5-row grid). The extra section
-          height is just the scroll distance the columns need to rise in from the bottom. */}
-      <section ref={btsRef} className="relative h-[160vh]">
+      {/* Behind the Scenes — pinned, 5-column cascade gallery. */}
+      <section ref={btsRef} className="relative h-[200vh]">
         <div className="sticky top-0 h-screen overflow-hidden">
           {/* Giant title — visible before the columns swipe in */}
           <h2
@@ -398,8 +397,8 @@ export default function About() {
             Behind-the-Scenes
           </h2>
 
-          {/* Columns — edge-to-edge, each fills the viewport height as 5 equal rows. They
-              start one full screen below and rise in from the bottom of the screen. */}
+          {/* Columns — edge-to-edge, each fills the full viewport height as 4 equal rows so
+              the leveled grid is full-bleed top-to-bottom with no gap before the next section. */}
           <div className="absolute inset-0 z-10 flex gap-1.5">
             {galleryColumns.map((col, i) => (
               <div
