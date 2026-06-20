@@ -26,7 +26,7 @@ export default function BigFooter() {
           'radial-gradient(125% 95% at 30% 135%, #2f7bff 0%, #0d3fce 28%, #0a2a8a 45%, #05112e 68%, #000000 100%)',
       }}
     >
-      <div className="px-6 md:px-12 pt-16 lg:pt-24 pb-8 lg:pb-10 flex flex-col min-h-[70vh] lg:min-h-screen">
+      <div className="px-6 md:px-12 pt-16 lg:pt-20 pb-8 flex flex-col">
         {/* Top row */}
         <div className="flex flex-col md:flex-row items-start justify-between gap-10">
           {/* Brand + location */}
@@ -85,7 +85,7 @@ export default function BigFooter() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-auto pt-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-white/45">
+        <div className="mt-16 lg:mt-24 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-white/45">
           <span>© 2026 Pamedia Media Agency, All Rights Reserved</span>
           <div className="flex items-center gap-5">
             <span className="hover:text-white transition-colors cursor-pointer">Privacy Policy</span>

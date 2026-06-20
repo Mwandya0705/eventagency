@@ -173,15 +173,17 @@ export default function About() {
       // the screen in a gentle centre-out cascade and settle into a leveled, full-bleed grid.
       if (btsRef.current) {
         const cols = columnsRef.current.filter(Boolean)
-        // Start every column fully below the frame so the title is visible first.
-        gsap.set(cols, { yPercent: 100 })
+        // Columns are visible from the moment the section enters; they ride up gently
+        // into place. Starting at 'top bottom' spreads the rise over the whole approach,
+        // so it's slow and controlled instead of snapping in once pinned.
+        gsap.set(cols, { yPercent: 45 })
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: btsRef.current,
-            start: 'top top',
+            start: 'top bottom', // begin as the section first enters the screen
             end: 'bottom bottom',
-            scrub: 1,
+            scrub: 0.8,
           },
         })
 
@@ -189,20 +191,18 @@ export default function About() {
           const order = Math.abs(i - 2) // 0 centre · 1 adjacent · 2 outer — gentle lag
           tl.fromTo(
             col,
-            { yPercent: 100 },
-            { yPercent: 0, ease: 'power2.out', duration: 0.82 },
-            order * 0.06 // small offset keeps the cascade subtle and controlled
+            { yPercent: 45 },
+            { yPercent: 0, ease: 'none', duration: 0.8 },
+            order * 0.08 // small offset keeps the cascade subtle and controlled
           )
         })
-        // Columns keep rising until ~0.94 of the scroll, so the slide-in continues
-        // most of the way down to the next section.
 
-        // Title fades back once the imagery has overtaken it
+        // Title fades back once the imagery has settled in
         tl.fromTo(
           btsTitleRef.current,
-          { opacity: 1, scale: 1.03 },
-          { opacity: 0.3, scale: 1, ease: 'none', duration: 0.7 },
-          0.1
+          { opacity: 1, scale: 1.02 },
+          { opacity: 0.35, scale: 1, ease: 'none', duration: 0.6 },
+          0.2
         )
       }
     })
@@ -254,7 +254,7 @@ export default function About() {
       </section>
 
       {/* About Us */}
-      <section className="px-6 md:px-12 py-16 md:py-20">
+      <section className="px-6 md:px-20 lg:px-32 py-16 md:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase text-white">
             About Us
@@ -338,7 +338,7 @@ export default function About() {
 
         <div
           ref={servicesScrollerRef}
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 md:-mx-12 px-6 md:px-12"
+          className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 md:-mx-12 pl-10 md:pl-28 pr-6 md:pr-12 scroll-pl-10 md:scroll-pl-28"
           style={{ scrollbarWidth: 'none' }}
         >
           {services.map((service) => (
@@ -387,9 +387,9 @@ export default function About() {
       </section>
 
       {/* Behind the Scenes — pinned, 5-column cascade gallery. */}
-      <section ref={btsRef} className="relative h-[200vh]">
-        <div className="sticky top-0 h-screen overflow-hidden">
-          {/* Giant title — visible before the columns swipe in */}
+      <section ref={btsRef} className="relative h-[120vh]">
+        <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-3 sm:px-6">
+          {/* Giant title — peeks around the grid in the side margins */}
           <h2
             ref={btsTitleRef}
             className="absolute inset-0 flex items-center justify-center text-center font-display font-bold uppercase leading-[0.85] tracking-tight text-[#d8e6ff] text-[15vw] md:text-[13vw] z-0 pointer-events-none px-4"
@@ -397,21 +397,21 @@ export default function About() {
             Behind-the-Scenes
           </h2>
 
-          {/* Columns — edge-to-edge, each fills the full viewport height as 4 equal rows so
-              the leveled grid is full-bleed top-to-bottom with no gap before the next section. */}
-          <div className="absolute inset-0 z-10 flex gap-1.5">
+          {/* Square-card grid: 5 columns × 4 square rows, centred with side margins.
+              The 5:4 box + square cells keeps every image square at any screen size. */}
+          <div className="relative z-10 mx-auto flex gap-2 aspect-[5/4] w-full h-auto md:h-full md:w-auto max-w-full max-h-full">
             {galleryColumns.map((col, i) => (
               <div
                 key={i}
                 ref={(el) => {
                   if (el) columnsRef.current[i] = el
                 }}
-                className="flex-1 h-full flex flex-col gap-1.5 will-change-transform"
+                className="flex-1 flex flex-col justify-center gap-2 will-change-transform"
               >
                 {col.map((src, j) => (
                   <div
                     key={j}
-                    className="flex-1 min-h-0 w-full overflow-hidden bg-gray-mid"
+                    className="w-full aspect-square overflow-hidden bg-gray-mid rounded-sm"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" />
@@ -424,11 +424,11 @@ export default function About() {
       </section>
 
       {/* Shaping culture together — client wall */}
-      <section className="px-6 md:px-12 py-16">
+      <section className="px-4 md:px-6 py-16">
         <h2 className="text-center font-display text-3xl md:text-5xl font-medium text-white mb-12">
           Shaping culture together
         </h2>
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-white/10">
+        <div className="max-w-[1700px] mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-white/10">
           {clients.map((client) => (
             <div
               key={client}
@@ -444,7 +444,7 @@ export default function About() {
       </section>
 
       {/* Testimonials */}
-      <section className="px-6 md:px-12 py-16">
+      <section className="px-4 md:px-6 py-16">
         <div className="text-center mb-12">
           <p className="text-xs uppercase tracking-[0.3em] text-gray-light mb-5 font-mono">
             Testimonials
@@ -456,7 +456,7 @@ export default function About() {
           </h2>
         </div>
 
-        <div className="max-w-5xl mx-auto relative rounded-2xl border border-blue-accent/30 p-8 md:p-12 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1a3bd6_0%,#0a1a5c_55%,#050a2e_100%)]">
+        <div className="max-w-[1500px] mx-auto relative rounded-2xl border border-blue-accent/30 p-8 md:p-14 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1a3bd6_0%,#0a1a5c_55%,#050a2e_100%)]">
           {/* Progress segments */}
           <div className="flex gap-2 mb-10">
             {testimonials.map((_, i) => (
