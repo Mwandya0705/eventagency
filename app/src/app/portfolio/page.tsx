@@ -150,7 +150,7 @@ export default function PortfolioPage() {
         </div>
 
         {/* 3D Model Container — fills most of the hero, leaving only room for the two bottom labels */}
-        <div className="absolute top-[2vh] bottom-[7vh] left-1/2 -translate-x-1/2 w-full max-w-4xl z-20 pointer-events-none">
+        <div className="absolute top-[7vh] bottom-[7vh] left-1/2 -translate-x-1/2 w-full max-w-4xl z-20 pointer-events-none">
           <div className="w-full h-full pointer-events-auto">
             {mounted && (
               <ModelViewer

@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import BigFooter from '@/components/BigFooter'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -90,14 +90,37 @@ const galleryColumns = [
   ['/images/portfolio-6.jpg', '/images/card-5.jpg', '/images/portfolio-1.jpg', '/images/card-3.jpg', '/images/portfolio-7.jpg'],
 ]
 
-// Per-column vertical travel (% of column height). Center columns travel further so the
-// grid rises into frame from the middle outward as the section is pinned.
-const columnTravel = [
-  { from: 10, to: -10 },
-  { from: 18, to: -18 },
-  { from: 26, to: -26 },
-  { from: 18, to: -18 },
-  { from: 10, to: -10 },
+// Client roster for the "Shaping culture together" wall (swap text for real logo <img>s).
+const clients = [
+  'Powerade', 'Fanatics', 'NBA', 'Mercedes AMG', 'NFL', 'Warner Bros',
+  'Celsius', 'Hublot', 'JD Sports', 'Bleacher Report', 'BodyArmor', 'Crumbl',
+]
+
+const testimonials = [
+  {
+    quote:
+      'We’ve partnered with Pamedia on multiple campaigns, and they consistently bring thoughtfulness and care to every project. They thrive in fast-moving environments — staying calm, collaborative, and solutions-focused when timelines shift or creative pivots happen. Whether it’s large-scale productions or ongoing campaigns, they approach the work with intention and truly think alongside us.',
+    name: 'Cosette Toomajian',
+    role: 'Content Production Manager',
+    company: 'Celsius',
+    initials: 'CT',
+  },
+  {
+    quote:
+      'Pamedia turned a tight, ambitious brief into a launch that overdelivered. The team moved fast without ever cutting corners, and the final work landed exactly the cultural moment we were chasing. They’re the rare partner that makes a hard project feel effortless.',
+    name: 'Marcus Reyes',
+    role: 'Head of Brand Marketing',
+    company: 'Fanatics',
+    initials: 'MR',
+  },
+  {
+    quote:
+      'From concept to final cut, Pamedia operates like an extension of our own team. They understand our audience, protect the brand, and still push us somewhere bolder than we’d have gone alone. The engagement numbers speak for themselves.',
+    name: 'Dana Whitfield',
+    role: 'VP, Social & Content',
+    company: 'Bleacher Report',
+    initials: 'DW',
+  },
 ]
 
 const Coin = () => (
@@ -118,6 +141,7 @@ export default function About() {
   const btsRef = useRef<HTMLDivElement>(null)
   const btsTitleRef = useRef<HTMLHeadingElement>(null)
   const columnsRef = useRef<HTMLDivElement[]>([])
+  const [activeTestimonial, setActiveTestimonial] = useState(0)
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -144,19 +168,12 @@ export default function About() {
         )
       }
 
-      // Behind-the-scenes: parallax columns rise as the section is pinned
+      // Behind-the-scenes: title sits alone, then the columns slide up from the bottom of
+      // the screen in a gentle centre-out cascade and settle into a leveled, full-bleed grid.
       if (btsRef.current) {
-        gsap.fromTo(
-          columnsRef.current,
-          { opacity: 0 },
-          {
-            opacity: 1,
-            duration: 0.8,
-            stagger: 0.08,
-            ease: 'power2.out',
-            scrollTrigger: { trigger: btsRef.current, start: 'top 60%' },
-          }
-        )
+        const cols = columnsRef.current.filter(Boolean)
+        // Start every column fully below the frame so the title is visible first.
+        gsap.set(cols, { yPercent: 100 })
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -167,22 +184,24 @@ export default function About() {
           },
         })
 
-        columnsRef.current.forEach((col, i) => {
-          if (!col) return
+        cols.forEach((col, i) => {
+          const order = Math.abs(i - 2) // 0 centre · 1 adjacent · 2 outer — gentle lag
           tl.fromTo(
             col,
-            { yPercent: columnTravel[i].from },
-            { yPercent: columnTravel[i].to, ease: 'none' },
-            0
+            { yPercent: 100 },
+            { yPercent: 0, ease: 'power2.out', duration: 0.5 },
+            order * 0.07 // small offset keeps the cascade subtle and controlled
           )
         })
+        // Columns finish rising by ~0.64; the remaining scroll holds the leveled,
+        // full-bleed grid on screen before it hands off to the next section.
 
-        // Title brightens then settles as imagery overtakes it
+        // Title fades back once the imagery has overtaken it
         tl.fromTo(
           btsTitleRef.current,
-          { opacity: 1, scale: 1.04 },
-          { opacity: 0.32, scale: 1, ease: 'none' },
-          0
+          { opacity: 1, scale: 1.03 },
+          { opacity: 0.3, scale: 1, ease: 'none', duration: 0.5 },
+          0.1
         )
       }
     })
@@ -195,6 +214,11 @@ export default function About() {
     if (!el) return
     el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: 'smooth' })
   }
+
+  const cycleTestimonial = (dir: number) =>
+    setActiveTestimonial((i) => (i + dir + testimonials.length) % testimonials.length)
+
+  const t = testimonials[activeTestimonial]
 
   return (
     <div className="bg-black min-h-screen overflow-x-hidden">
@@ -229,7 +253,7 @@ export default function About() {
       </section>
 
       {/* About Us */}
-      <section className="px-6 md:px-12 py-24 md:py-32">
+      <section className="px-6 md:px-12 py-16 md:py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-16">
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase text-white">
             About Us
@@ -284,7 +308,7 @@ export default function About() {
       </section>
 
       {/* Services */}
-      <section className="px-6 md:px-12 py-24">
+      <section className="px-6 md:px-12 py-16">
         <div className="flex items-end justify-between mb-12">
           <h2 className="font-display text-4xl md:text-5xl font-bold uppercase text-white">
             Services
@@ -361,10 +385,12 @@ export default function About() {
         </div>
       </section>
 
-      {/* Behind the Scenes — pinned, 5-column parallax gallery */}
-      <section ref={btsRef} className="relative h-[280vh]">
+      {/* Behind the Scenes — pinned, 5-column cascade gallery.
+          The pinned area is exactly one screen tall (the 5-row grid). The extra section
+          height is just the scroll distance the columns need to rise in from the bottom. */}
+      <section ref={btsRef} className="relative h-[160vh]">
         <div className="sticky top-0 h-screen overflow-hidden">
-          {/* Giant title behind imagery */}
+          {/* Giant title — visible before the columns swipe in */}
           <h2
             ref={btsTitleRef}
             className="absolute inset-0 flex items-center justify-center text-center font-display font-bold uppercase leading-[0.85] tracking-tight text-[#d8e6ff] text-[15vw] md:text-[13vw] z-0 pointer-events-none px-4"
@@ -372,20 +398,21 @@ export default function About() {
             Behind-the-Scenes
           </h2>
 
-          {/* Columns */}
-          <div className="absolute inset-0 z-10 flex gap-2 md:gap-3 px-2 md:px-3">
+          {/* Columns — edge-to-edge, each fills the viewport height as 5 equal rows. They
+              start one full screen below and rise in from the bottom of the screen. */}
+          <div className="absolute inset-0 z-10 flex gap-1.5">
             {galleryColumns.map((col, i) => (
               <div
                 key={i}
                 ref={(el) => {
                   if (el) columnsRef.current[i] = el
                 }}
-                className="flex-1 flex flex-col gap-2 md:gap-3 will-change-transform"
+                className="flex-1 h-full flex flex-col gap-1.5 will-change-transform"
               >
                 {col.map((src, j) => (
                   <div
                     key={j}
-                    className="w-full aspect-[3/4] rounded-lg overflow-hidden bg-gray-mid"
+                    className="flex-1 min-h-0 w-full overflow-hidden bg-gray-mid"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" />
@@ -397,23 +424,105 @@ export default function About() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="px-6 md:px-12 py-28 text-center">
-        <h2 className="font-display text-4xl md:text-6xl font-bold uppercase text-white mb-6">
-          Ready to create?
+      {/* Shaping culture together — client wall */}
+      <section className="px-6 md:px-12 py-16">
+        <h2 className="text-center font-display text-3xl md:text-5xl font-medium text-white mb-12">
+          Shaping culture together
         </h2>
-        <p className="text-gray-light mb-10 max-w-lg mx-auto">
-          Let’s collaborate on your next project and make something unforgettable.
-        </p>
-        <a
-          href="/contact"
-          className="inline-block bg-white text-black px-10 py-4 rounded-full font-medium text-sm hover:bg-blue-accent hover:text-white transition-all duration-300"
-        >
-          Get in Touch
-        </a>
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px bg-white/10">
+          {clients.map((client) => (
+            <div
+              key={client}
+              className="bg-black flex items-center justify-center py-12 md:py-16 px-4"
+            >
+              {/* Replace with <img> logos when available */}
+              <span className="text-white/45 hover:text-white transition-colors duration-300 font-display font-semibold uppercase tracking-wide text-base md:text-lg text-center">
+                {client}
+              </span>
+            </div>
+          ))}
+        </div>
       </section>
 
-      <Footer />
+      {/* Testimonials */}
+      <section className="px-6 md:px-12 py-16">
+        <div className="text-center mb-12">
+          <p className="text-xs uppercase tracking-[0.3em] text-gray-light mb-5 font-mono">
+            Testimonials
+          </p>
+          <h2 className="font-display text-4xl md:text-6xl font-bold text-white leading-[1.05]">
+            Don’t take our word
+            <br />
+            for it, <span className="text-blue-accent">take theirs</span>
+          </h2>
+        </div>
+
+        <div className="max-w-5xl mx-auto relative rounded-2xl border border-blue-accent/30 p-8 md:p-12 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1a3bd6_0%,#0a1a5c_55%,#050a2e_100%)]">
+          {/* Progress segments */}
+          <div className="flex gap-2 mb-10">
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTestimonial(i)}
+                aria-label={`Show testimonial ${i + 1}`}
+                className="h-1 flex-1 rounded-full overflow-hidden bg-white/15"
+              >
+                <span
+                  className={`block h-full bg-blue-glow transition-transform duration-500 origin-left ${
+                    i === activeTestimonial ? 'scale-x-100' : 'scale-x-0'
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 md:gap-12 items-start">
+            {/* Photo placeholder — swap with a real headshot */}
+            <div className="aspect-[4/5] rounded-xl bg-gradient-to-br from-white/90 to-white/60 flex items-center justify-center shrink-0">
+              <span className="font-display font-bold text-6xl text-[#0a1a5c]/70">{t.initials}</span>
+            </div>
+
+            <div>
+              <blockquote className="text-white text-base md:text-lg leading-relaxed">
+                “{t.quote}”
+              </blockquote>
+              <div className="mt-8 flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-white font-medium text-lg">{t.name}</p>
+                  <p className="text-blue-glow text-sm">{t.role}</p>
+                </div>
+                <span className="text-white/80 font-display font-semibold uppercase tracking-wide">
+                  {t.company}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Arrows */}
+          <div className="flex items-center justify-end gap-3 mt-10">
+            <button
+              onClick={() => cycleTestimonial(-1)}
+              aria-label="Previous testimonial"
+              className="w-11 h-11 rounded-lg bg-black/30 border border-white/15 flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <button
+              onClick={() => cycleTestimonial(1)}
+              aria-label="Next testimonial"
+              className="w-11 h-11 rounded-lg bg-black/30 border border-white/15 flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <BigFooter />
     </div>
   )
 }
