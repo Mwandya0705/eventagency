@@ -13,21 +13,13 @@ const nextConfig = {
     ],
   },
 
-  // Tell Vercel's edge to cache Supabase video/image responses for 1 year
-  async headers() {
-    return [
-      {
-        // Proxy-style: cache everything from Supabase storage on the CDN
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, stale-while-revalidate=86400',
-          },
-        ],
-      },
-    ]
-  },
+  // NOTE: do NOT add a catch-all `Cache-Control` header here. A previous
+  // `source: '/(.*)'` rule cached HTML documents and RSC payloads for a year,
+  // so after each deploy browsers/CDN served stale HTML that referenced old JS
+  // chunk hashes — those 404'd and crashed the app ("client-side exception").
+  // Next/Vercel already cache hashed `_next/static` assets as immutable, and
+  // Supabase media is served from supabase.co (a different origin), so it was
+  // never affected by this rule anyway.
 }
 
 export default nextConfig
