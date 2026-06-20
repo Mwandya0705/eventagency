@@ -173,15 +173,14 @@ export default function About() {
       // the screen in a gentle centre-out cascade and settle into a leveled, full-bleed grid.
       if (btsRef.current) {
         const cols = columnsRef.current.filter(Boolean)
-        // Columns are visible from the moment the section enters; they ride up gently
-        // into place. Starting at 'top bottom' spreads the rise over the whole approach,
-        // so it's slow and controlled instead of snapping in once pinned.
-        gsap.set(cols, { yPercent: 45 })
+        // Columns start fully below the frame, so the title is visible on its own first.
+        // Once the section pins, scrolling rolls them up from the bottom (centre first).
+        gsap.set(cols, { yPercent: 100 })
 
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: btsRef.current,
-            start: 'top bottom', // begin as the section first enters the screen
+            start: 'top top', // title sits pinned first, then the columns roll up
             end: 'bottom bottom',
             scrub: 0.8,
           },
@@ -191,18 +190,18 @@ export default function About() {
           const order = Math.abs(i - 2) // 0 centre · 1 adjacent · 2 outer — gentle lag
           tl.fromTo(
             col,
-            { yPercent: 45 },
+            { yPercent: 100 },
             { yPercent: 0, ease: 'none', duration: 0.8 },
             order * 0.08 // small offset keeps the cascade subtle and controlled
           )
         })
 
-        // Title fades back once the imagery has settled in
+        // Title fades back once the imagery has rolled up over it
         tl.fromTo(
           btsTitleRef.current,
           { opacity: 1, scale: 1.02 },
           { opacity: 0.35, scale: 1, ease: 'none', duration: 0.6 },
-          0.2
+          0.25
         )
       }
     })
@@ -311,7 +310,7 @@ export default function About() {
       {/* Services */}
       <section className="px-6 md:px-12 py-16">
         <div className="flex items-end justify-between mb-12">
-          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase text-white">
+          <h2 className="font-display text-4xl md:text-5xl font-bold uppercase text-white ml-1 md:ml-16">
             Services
           </h2>
           <div className="flex items-center gap-3">
@@ -387,7 +386,7 @@ export default function About() {
       </section>
 
       {/* Behind the Scenes — pinned, 5-column cascade gallery. */}
-      <section ref={btsRef} className="relative h-[120vh]">
+      <section ref={btsRef} className="relative h-[180vh]">
         <div className="sticky top-0 h-screen overflow-hidden flex items-center justify-center px-3 sm:px-6">
           {/* Giant title — peeks around the grid in the side margins */}
           <h2
@@ -456,7 +455,7 @@ export default function About() {
           </h2>
         </div>
 
-        <div className="max-w-[1500px] mx-auto relative rounded-2xl border border-blue-accent/30 p-8 md:p-14 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1a3bd6_0%,#0a1a5c_55%,#050a2e_100%)]">
+        <div className="max-w-5xl mx-auto relative rounded-2xl border border-blue-accent/30 p-6 md:p-10 overflow-hidden bg-[radial-gradient(120%_120%_at_50%_0%,#1a3bd6_0%,#0a1a5c_55%,#050a2e_100%)]">
           {/* Progress segments */}
           <div className="flex gap-2 mb-10">
             {testimonials.map((_, i) => (

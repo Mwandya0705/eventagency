@@ -54,9 +54,25 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
     const scene = new THREE.Scene()
 
     /* ── Camera — centred on model so full figure shows head to toe ── */
-    const camera = new THREE.PerspectiveCamera(40, mount.clientWidth / mount.clientHeight, 0.1, 1000)
+    const FOV = 40
+    const camera = new THREE.PerspectiveCamera(FOV, mount.clientWidth / mount.clientHeight, 0.1, 1000)
     camera.position.set(0, 0.0, 8.0)
     camera.lookAt(0, 0.0, 0)  // look at model centre
+
+    // Frame the camera so the whole model fits the current aspect ratio. On narrow
+    // (portrait / small) displays this pulls the camera back so the figure never clips —
+    // height-only framing would otherwise cut the model off on tall, narrow screens.
+    let modelHeight = 4.6 // scaled target height (set after load)
+    let modelWidth = 1.8 // silhouette width incl. rotation (set after load)
+    const frameCamera = () => {
+      const aspect = mount.clientWidth / Math.max(1, mount.clientHeight)
+      const vFov = (FOV * Math.PI) / 180
+      const fitHeightDist = modelHeight / 2 / Math.tan(vFov / 2)
+      const fitWidthDist = modelWidth / 2 / (Math.tan(vFov / 2) * aspect)
+      camera.position.z = Math.max(fitHeightDist, fitWidthDist) * 1.28 // breathing room
+      camera.updateProjectionMatrix()
+    }
+    frameCamera()
 
     /* ── Lights ── */
     const ambient = new THREE.AmbientLight(0xffffff, 0.7)
@@ -141,6 +157,11 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
             }
           })
 
+          // Frame to the real model size (use the x/z diagonal so it never clips while spinning)
+          modelHeight = size.y * scale
+          modelWidth = Math.hypot(size.x, size.z) * scale
+          frameCamera()
+
           if (placeholder) pivot.remove(placeholder)
           pivot.add(model)
           loadedModel = model
@@ -181,14 +202,17 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
     renderer.domElement.style.touchAction = 'none'
     renderer.domElement.style.cursor = 'grab'
 
-    /* ── Resize observer ── */
-    const ro = new ResizeObserver(() => {
-      if (!mount) return
+    /* ── Resize handling (ResizeObserver + window resize fallback) ── */
+    const handleResize = () => {
+      if (!mount || !mount.clientWidth || !mount.clientHeight) return
       renderer.setSize(mount.clientWidth, mount.clientHeight)
       camera.aspect = mount.clientWidth / mount.clientHeight
-      camera.updateProjectionMatrix()
-    })
+      frameCamera() // re-fit so the model stays fully visible at the new size
+    }
+    const ro = new ResizeObserver(handleResize)
     ro.observe(mount)
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('orientationchange', handleResize)
 
     /* ── Render loop ── */
     let rafId: number
@@ -204,6 +228,8 @@ function ThreeCanvas({ modelPath, modelReady }: { modelPath: string; modelReady:
       cancelled = true
       cancelAnimationFrame(rafId)
       ro.disconnect()
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
       renderer.domElement.removeEventListener('pointerdown', onPointerDown)
       renderer.domElement.removeEventListener('pointermove', onPointerMove)
       renderer.domElement.removeEventListener('pointerup', onPointerUp)
