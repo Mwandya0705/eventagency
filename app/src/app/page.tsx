@@ -293,7 +293,7 @@ export default function Home() {
                     src={b.video}
                     muted
                     playsInline
-                    preload={isActive ? (isMobile ? 'metadata' : 'auto') : (isMobile ? 'none' : 'metadata')}
+                    preload={isActive ? 'auto' : (isMobile ? 'none' : 'metadata')}
                     poster={b.coverSm}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -412,9 +412,8 @@ export default function Home() {
       )}
 
       {/* Pre-buffer the active brand's first film (full quality) while the user is on the
-          stage, so it autoplays instantly the moment they open the project.
-          Disabled on mobile to avoid eating mobile data silently. */}
-      {loaded && project === null && !isMobile && (
+          stage, so it autoplays instantly the moment they open the project. */}
+      {loaded && project === null && (
         <video
           key={`warm-${active}`}
           src={brands[active]?.videos?.[0]?.src ?? brands[active]?.video}

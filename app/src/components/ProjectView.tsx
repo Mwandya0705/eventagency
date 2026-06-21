@@ -80,7 +80,11 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
     if (open && selectedVideo) {
       v.muted = false
       v.currentTime = 0
-      v.play().catch(() => {})
+      v.play().catch((err) => {
+        console.warn("Unmuted autoplay blocked by browser, trying muted autoplay:", err)
+        v.muted = true
+        v.play().catch((e) => console.error("Muted autoplay also failed:", e))
+      })
     } else {
       v.pause()
     }
