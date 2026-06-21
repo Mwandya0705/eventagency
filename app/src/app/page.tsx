@@ -105,7 +105,21 @@ const N = brands.length
 const COVER_HOLD_MS = 3000
 const SCROLL_BAND = 0.3
 
+/** Detect mobile (≤ 768px). Evaluated once after mount so SSR-safe. */
+function useIsMobile() {
+  const [mobile, setMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    setMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return mobile
+}
+
 export default function Home() {
+  const isMobile = useIsMobile()
   const [loaded, setLoaded] = useState(false)
   const [imagesReady, setImagesReady] = useState(false)
   const [active, setActive] = useState(0)
@@ -271,13 +285,15 @@ export default function Home() {
                   className="absolute inset-0 transition-opacity duration-700 ease-out"
                   style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
                 >
-                  {/* Video — hides cover the instant it starts playing */}
+                  {/* Video — hides cover the instant it starts playing.
+                      On mobile: only load the active video's metadata, skip non-active entirely
+                      to avoid saturating the mobile connection with 5 background fetches. */}
                   <video
                     ref={(el) => { videoRefs.current[i] = el }}
                     src={b.video}
                     muted
                     playsInline
-                    preload={isActive ? 'auto' : 'metadata'}
+                    preload={isActive ? (isMobile ? 'metadata' : 'auto') : (isMobile ? 'none' : 'metadata')}
                     poster={b.coverSm}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -396,8 +412,9 @@ export default function Home() {
       )}
 
       {/* Pre-buffer the active brand's first film (full quality) while the user is on the
-          stage, so it autoplays instantly the moment they open the project. */}
-      {loaded && project === null && (
+          stage, so it autoplays instantly the moment they open the project.
+          Disabled on mobile to avoid eating mobile data silently. */}
+      {loaded && project === null && !isMobile && (
         <video
           key={`warm-${active}`}
           src={brands[active]?.videos?.[0]?.src ?? brands[active]?.video}

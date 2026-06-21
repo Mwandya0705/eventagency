@@ -10,7 +10,8 @@ interface LoadingScreenProps {
 
 const SPLASH_VIDEO =
   'https://ggdflkchtogsssnakxsh.supabase.co/storage/v1/object/public/videos/splashscreenvideo.mp4'
-const SPLASH_DURATION_MS = 8000
+const SPLASH_DURATION_DESKTOP = 8000
+const SPLASH_DURATION_MOBILE  = 4000
 
 export default function LoadingScreen({ onComplete, ready = true }: LoadingScreenProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -20,9 +21,23 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
   const doneRef      = useRef(false)
   const startedRef   = useRef(false)
 
-  const [progress,    setProgress]    = useState(0)
-  const [started,     setStarted]     = useState(false)
-  const [videoLoaded, setVideoLoaded] = useState(false)
+  // Keep track of mobile in a ref so effects can read the correct value
+  // without depending on state (avoids stale-closure problems).
+  const isMobileRef = useRef(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  const [progress, setProgress] = useState(0)
+  const [started,  setStarted]  = useState(false)
+
+  // Detect mobile on mount
+  useEffect(() => {
+    const mobile = window.matchMedia('(max-width: 768px)').matches
+    isMobileRef.current = mobile
+    setIsMobile(mobile)
+  }, [])
+
+  const getSplashDuration = () =>
+    isMobileRef.current ? SPLASH_DURATION_MOBILE : SPLASH_DURATION_DESKTOP
 
   const finish = () => {
     if (doneRef.current) return
@@ -47,26 +62,26 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
     setStarted(true)
   }
 
+  // Kick off video + start progress bar within 1 s no matter what
   useEffect(() => {
-    // Try to play; always start the progress bar after 1s regardless
     const v = videoRef.current
-    if (v) {
-      v.play().catch(() => {})
-    }
+    if (v) { v.play().catch(() => {}) }
     const t = setTimeout(beginProgress, 1000)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Animate the progress bar once started
   useEffect(() => {
     if (!started) return
+    const duration = getSplashDuration()
     let raf = 0
     const t0 = performance.now()
     const tick = (now: number) => {
       const elapsed = now - t0
-      const p = Math.min(100, (elapsed / SPLASH_DURATION_MS) * 100)
+      const p = Math.min(100, (elapsed / duration) * 100)
       setProgress(readyRef.current ? p : Math.min(p, 99))
-      if (elapsed >= SPLASH_DURATION_MS && readyRef.current) { finish(); return }
+      if (elapsed >= duration && readyRef.current) { finish(); return }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
@@ -74,9 +89,9 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started])
 
-  // Hard safety net
+  // Hard safety net — always exits by desktop max + 5 s
   useEffect(() => {
-    const t = setTimeout(() => finish(), SPLASH_DURATION_MS + 5000)
+    const t = setTimeout(() => finish(), SPLASH_DURATION_DESKTOP + 5000)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -89,7 +104,10 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
       className="fixed inset-0 z-[100] bg-black overflow-hidden"
       style={{ height: '100dvh' }}
     >
-      {/* === VIDEO LAYER === */}
+      {/* VIDEO LAYER
+          Desktop: preload="auto" for instant playback.
+          Mobile:  preload="metadata" to avoid burning mobile data — progress bar
+          still starts because beginProgress fires after 1 s anyway. */}
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover z-[1]"
@@ -97,13 +115,13 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
         autoPlay
         muted
         playsInline
-        preload="auto"
-        onCanPlay={() => { videoRef.current?.play().catch(() => {}); setVideoLoaded(true); beginProgress() }}
-        onPlaying={() => { setVideoLoaded(true); beginProgress() }}
+        preload={isMobile ? 'metadata' : 'auto'}
+        onCanPlay={() => { videoRef.current?.play().catch(() => {}); beginProgress() }}
+        onPlaying={beginProgress}
         onError={beginProgress}
       />
 
-      {/* === PROGRESS BAR === */}
+      {/* PROGRESS BAR */}
       <div className="absolute bottom-0 left-0 w-full z-[10]">
         <div className="relative h-7 md:h-9 w-full bg-gray-900 overflow-hidden">
           <div
