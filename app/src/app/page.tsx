@@ -102,7 +102,7 @@ const brands: Brand[] = [
 ]
 
 const N = brands.length
-const COVER_HOLD_MS = 1200
+const COVER_HOLD_MS = 3000
 const SCROLL_BAND = 0.3
 
 export default function Home() {
@@ -172,13 +172,12 @@ export default function Home() {
     })
     setCoverVisible(true)
 
-    // Start playing the active video immediately — the cover photo only stays up until
-    // the video can actually play (onPlaying), so there's no artificial loading hold.
+    // Start playing the active video after a short hold (cover photo shows for ~3s first)
     const playTimer = setTimeout(() => {
       if (projectRef.current !== null) return
       const v = videoRefs.current[active]
       if (v) { v.currentTime = 0; v.play().catch(() => {}) }
-    }, 0)
+    }, 3000)
 
     // Fallback: hide cover after COVER_HOLD_MS even if onPlaying hasn't fired
     const fallbackTimer = setTimeout(() => {
@@ -278,7 +277,7 @@ export default function Home() {
                     src={b.video}
                     muted
                     playsInline
-                    preload={Math.abs(i - active) <= 1 ? 'auto' : 'metadata'}
+                    preload={isActive ? 'auto' : 'metadata'}
                     poster={b.coverSm}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
                     className="absolute inset-0 w-full h-full object-cover"
