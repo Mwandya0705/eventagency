@@ -137,11 +137,12 @@ export default function Home() {
   const cursorModeRef = useRef<'view' | 'scroll'>('view')
   const cursorActiveRef = useRef(false)
 
-  // Preload cover images so the splash hands off cleanly — only the size this screen needs.
+  // Preload cover images and first brand videos so the splash screen hands off cleanly
   useEffect(() => {
     const isLarge =
       typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
-    const promises = brands.map(
+
+    const imgPromises = brands.map(
       (b) =>
         new Promise<void>((resolve) => {
           const img = new Image()
@@ -150,7 +151,28 @@ export default function Home() {
           img.src = isLarge ? b.coverLg : b.coverSm
         })
     )
-    Promise.all(promises).then(() => setImagesReady(true))
+
+    // Preload first cover video & first project video to make them play instantly on start
+    const firstCoverVideo = brands[0].video
+    const firstProjectVideo = brands[0].videos?.[0]?.src
+    const videoSources = [firstCoverVideo, firstProjectVideo].filter(Boolean) as string[]
+
+    const videoPromises = videoSources.map((src) => {
+      return new Promise<void>((resolve) => {
+        const v = document.createElement('video')
+        v.src = src
+        v.preload = 'auto'
+        v.muted = true
+        v.playsInline = true
+        v.oncanplaythrough = () => resolve()
+        v.onloadedmetadata = () => resolve()
+        v.onerror = () => resolve()
+        // Safety timeout to avoid getting stuck if user is on a slow connection
+        setTimeout(resolve, 3000)
+      })
+    })
+
+    Promise.all([...imgPromises, ...videoPromises]).then(() => setImagesReady(true))
   }, [])
 
   // Scroll snaps to the next brand
@@ -293,7 +315,7 @@ export default function Home() {
                     src={b.video}
                     muted
                     playsInline
-                    preload={isActive ? 'auto' : (isMobile ? 'none' : 'metadata')}
+                    preload="auto"
                     poster={b.coverSm}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -411,12 +433,11 @@ export default function Home() {
         </div>
       )}
 
-      {/* Pre-buffer the active brand's first film (full quality) while the user is on the
-          stage, so it autoplays instantly the moment they open the project. */}
-      {loaded && project === null && (
+      {/* Pre-buffer the first project film for all brands during the splash screen so they autoplay instantly when opened */}
+      {brands.map((b, i) => (
         <video
-          key={`warm-${active}`}
-          src={brands[active]?.videos?.[0]?.src ?? brands[active]?.video}
+          key={`warm-project-${i}`}
+          src={b.videos?.[0]?.src ?? b.video}
           muted
           playsInline
           preload="auto"
@@ -424,7 +445,7 @@ export default function Home() {
           aria-hidden
           className="absolute -z-10 w-px h-px opacity-0 pointer-events-none"
         />
-      )}
+      ))}
 
       {/* Project view */}
       <ProjectView

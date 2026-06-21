@@ -63,21 +63,32 @@ interface ProjectViewProps {
 
 export default function ProjectView({ brands, index, onClose, onNavigate }: ProjectViewProps) {
   const open = index !== null
-  const [current, setCurrent] = useState(0)
-  const [selectedVideo, setSelectedVideo] = useState('')
-  const videoRef = useRef<HTMLVideoElement>(null)
 
-  useEffect(() => {
-    if (index === null) return
-    setCurrent(index)
-    const b = brands[index]
-    setSelectedVideo(b.videos?.[0]?.src ?? b.video)
-  }, [index, brands])
+  // Retain the last non-null index so during the close transition we don't flash/jump to brand 0
+  const [lastNonNullIndex, setLastNonNullIndex] = useState(0)
+  if (index !== null && index !== lastNonNullIndex) {
+    setLastNonNullIndex(index)
+  }
+  const current = index !== null ? index : lastNonNullIndex
+
+  // Track current video selection override. Reset when index changes.
+  const [selectedVideoOverride, setSelectedVideoOverride] = useState<string | null>(null)
+  const [prevIndex, setPrevIndex] = useState<number | null>(null)
+  if (index !== prevIndex) {
+    setPrevIndex(index)
+    setSelectedVideoOverride(null)
+  }
+
+  const brand = brands[current]
+  const defaultVideo = brand.videos?.[0]?.src ?? brand.video
+  const activeVideo = selectedVideoOverride !== null ? selectedVideoOverride : defaultVideo
+
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
-    if (open && selectedVideo) {
+    if (open && activeVideo) {
       v.muted = false
       v.currentTime = 0
       v.play().catch((err) => {
@@ -88,9 +99,8 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
     } else {
       v.pause()
     }
-  }, [open, selectedVideo])
+  }, [open, activeVideo])
 
-  const brand = brands[current]
   const clips: Clip[] = brand.videos?.length
     ? brand.videos
     : [{ src: brand.video, title: brand.name }]
@@ -108,8 +118,8 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
       {/* Main player — covers the screen (full-bleed) like the reference */}
       <video
         ref={videoRef}
-        key={selectedVideo || 'none'}
-        src={selectedVideo || undefined}
+        key={activeVideo || 'none'}
+        src={activeVideo || undefined}
         controls
         playsInline
         preload="auto"
@@ -177,12 +187,12 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
           {clips.map((clip, i) => (
             <button
               key={clip.src + i}
-              onClick={() => setSelectedVideo(clip.src)}
+              onClick={() => setSelectedVideoOverride(clip.src)}
               className="group flex shrink-0 items-center gap-1.5 md:gap-2 text-right"
             >
               <span
                 className={`hidden md:block max-w-[130px] truncate text-xs transition-colors ${
-                  selectedVideo === clip.src ? 'text-white' : 'text-white/50 group-hover:text-white/80'
+                  activeVideo === clip.src ? 'text-white' : 'text-white/50 group-hover:text-white/80'
                 }`}
               >
                 {clip.title}
@@ -190,13 +200,13 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
               {/* Thumbnail: 80px on mobile, 128px on md+ */}
               <span
                 className={`relative w-20 md:w-32 aspect-video rounded-md overflow-hidden border transition-colors ${
-                  selectedVideo === clip.src ? 'border-blue-accent' : 'border-white/20 group-hover:border-white/50'
+                  activeVideo === clip.src ? 'border-blue-accent' : 'border-white/20 group-hover:border-white/50'
                 }`}
               >
                 <ClipThumb src={clip.src} />
                 <span
                   className={`absolute inset-0 transition-colors ${
-                    selectedVideo === clip.src ? 'bg-blue-accent/10' : 'bg-black/30'
+                    activeVideo === clip.src ? 'bg-blue-accent/10' : 'bg-black/30'
                   }`}
                 />
               </span>
