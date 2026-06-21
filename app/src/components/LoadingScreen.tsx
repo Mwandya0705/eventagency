@@ -115,7 +115,7 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
         autoPlay
         muted
         playsInline
-        preload={isMobile ? 'metadata' : 'auto'}
+        preload="auto"
         onCanPlay={() => { videoRef.current?.play().catch(() => {}); beginProgress() }}
         onPlaying={beginProgress}
         onError={beginProgress}

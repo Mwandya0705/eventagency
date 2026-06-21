@@ -172,7 +172,9 @@ export default function Home() {
       })
     })
 
-    Promise.all([...imgPromises, ...videoPromises]).then(() => setImagesReady(true))
+    Promise.all([...imgPromises, ...videoPromises]).then(() => {
+      setImagesReady(true)
+    })
   }, [])
 
   // Scroll snaps to the next brand
@@ -298,8 +300,12 @@ export default function Home() {
         >
           {/* Pinned stage */}
           <div className="fixed inset-0 z-10 overflow-hidden" style={{ height: '100dvh' }}>
-            {brands.map((b, i) => {
+             {brands.map((b, i) => {
               const isActive = i === active
+              const isNeighbour =
+                i === active ||
+                i === (active + 1) % N ||
+                i === (active - 1 + N) % N
 
               return (
                 <div
@@ -308,11 +314,10 @@ export default function Home() {
                   style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
                 >
                   {/* Video — hides cover the instant it starts playing.
-                      On mobile: only load the active video's metadata, skip non-active entirely
-                      to avoid saturating the mobile connection with 5 background fetches. */}
+                      Only attach src to active and adjacent cover videos to stay within iOS Safari's concurrent video player limit. */}
                   <video
                     ref={(el) => { videoRefs.current[i] = el }}
-                    src={b.video}
+                    src={isNeighbour ? b.video : undefined}
                     muted
                     playsInline
                     preload="auto"
@@ -433,11 +438,12 @@ export default function Home() {
         </div>
       )}
 
-      {/* Pre-buffer the first project film for all brands during the splash screen so they autoplay instantly when opened */}
-      {brands.map((b, i) => (
+      {/* Pre-buffer the active brand's first film (full quality) while the user is on the
+          stage, so it autoplays instantly the moment they open the project. */}
+      {loaded && project === null && (
         <video
-          key={`warm-project-${i}`}
-          src={b.videos?.[0]?.src ?? b.video}
+          key={`warm-${active}`}
+          src={brands[active]?.videos?.[0]?.src ?? brands[active]?.video}
           muted
           playsInline
           preload="auto"
@@ -445,7 +451,7 @@ export default function Home() {
           aria-hidden
           className="absolute -z-10 w-px h-px opacity-0 pointer-events-none"
         />
-      ))}
+      )}
 
       {/* Project view */}
       <ProjectView
