@@ -396,6 +396,21 @@ export default function Home() {
         </div>
       )}
 
+      {/* Pre-buffer the active brand's first film (full quality) while the user is on the
+          stage, so it autoplays instantly the moment they open the project. */}
+      {loaded && project === null && (
+        <video
+          key={`warm-${active}`}
+          src={brands[active]?.videos?.[0]?.src ?? brands[active]?.video}
+          muted
+          playsInline
+          preload="auto"
+          tabIndex={-1}
+          aria-hidden
+          className="absolute -z-10 w-px h-px opacity-0 pointer-events-none"
+        />
+      )}
+
       {/* Project view */}
       <ProjectView
         brands={brands}
