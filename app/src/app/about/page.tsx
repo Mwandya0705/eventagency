@@ -169,44 +169,58 @@ export default function About() {
         )
       }
 
-      // Behind-the-scenes: title sits alone, then the columns slide up from the bottom of
-      // the screen in a gentle centre-out cascade and settle into a leveled, full-bleed grid.
-      if (btsRef.current) {
-        const cols = columnsRef.current.filter(Boolean)
-        // Columns start fully below the frame, so the title is visible on its own first.
-        // Once the section pins, scrolling rolls them up from the bottom (centre first).
-        gsap.set(cols, { yPercent: 100 })
+    })
 
+    // Behind-the-scenes: responsive. Desktop pins the section and rolls the columns up
+    // over the title; mobile (where the grid is short) just fades the grid in on scroll.
+    const mm = gsap.matchMedia()
+    if (btsRef.current) {
+      const cols = columnsRef.current.filter(Boolean)
+
+      mm.add('(min-width: 768px)', () => {
+        gsap.set(cols, { yPercent: 100, opacity: 1 })
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: btsRef.current,
-            start: 'top top', // title sits pinned first, then the columns roll up
+            start: 'top top',
             end: 'bottom bottom',
-            scrub: 1.3, // heavier smoothing = silkier, less abrupt
+            scrub: 1.3,
           },
         })
-
         cols.forEach((col, i) => {
-          const order = Math.abs(i - 2) // 0 centre · 1 adjacent · 2 outer — gentle lag
-          tl.fromTo(
-            col,
-            { yPercent: 100 },
-            { yPercent: 0, ease: 'power2.out', duration: 0.9 },
-            order * 0.07 // small offset keeps the cascade subtle and controlled
-          )
+          const order = Math.abs(i - 2)
+          tl.fromTo(col, { yPercent: 100 }, { yPercent: 0, ease: 'power2.out', duration: 0.9 }, order * 0.07)
         })
-
-        // Title fades back once the imagery has rolled up over it
         tl.fromTo(
           btsTitleRef.current,
           { opacity: 1, scale: 1.02 },
           { opacity: 0.35, scale: 1, ease: 'none', duration: 0.6 },
           0.25
         )
-      }
-    })
+      })
 
-    return () => ctx.revert()
+      mm.add('(max-width: 767px)', () => {
+        // No pinning on mobile — keep columns in place and fade them in as they enter.
+        gsap.set(cols, { yPercent: 0 })
+        gsap.fromTo(
+          cols,
+          { opacity: 0, y: 28 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.06,
+            ease: 'power2.out',
+            scrollTrigger: { trigger: btsRef.current, start: 'top 80%' },
+          }
+        )
+      })
+    }
+
+    return () => {
+      ctx.revert()
+      mm.revert()
+    }
   }, [])
 
   const scrollServices = (dir: number) => {
@@ -386,19 +400,19 @@ export default function About() {
       </section>
 
       {/* Behind the Scenes — pinned, 5-column cascade gallery. */}
-      <section ref={btsRef} className="relative h-[150vh]">
-        <div className="sticky top-0 h-[150vh] overflow-hidden flex items-center justify-center px-3 sm:px-6">
-          {/* Giant title — peeks around the grid in the side margins */}
+      <section ref={btsRef} className="relative md:h-[150vh]">
+        <div className="relative md:sticky md:top-0 md:h-[150vh] overflow-hidden flex flex-col md:flex-row items-center justify-center px-4 sm:px-14 lg:px-28 py-14 md:py-0">
+          {/* Giant title — above the grid on mobile, behind it (peeking at the sides) on desktop */}
           <h2
             ref={btsTitleRef}
-            className="absolute inset-0 flex items-center justify-center text-center font-display font-bold uppercase leading-[0.85] tracking-tight text-[#d8e6ff] text-[15vw] md:text-[13vw] z-0 pointer-events-none px-4"
+            className="relative md:absolute md:inset-0 md:flex md:items-center md:justify-center text-center font-display font-bold uppercase leading-[0.9] md:leading-[0.85] tracking-tight text-[#d8e6ff] text-[13vw] md:text-[13vw] z-0 pointer-events-none mb-8 md:mb-0 md:px-4"
           >
             Behind-the-Scenes
           </h2>
 
-          {/* Square-card grid: 5 columns × 4 square rows, centred with side margins.
-              The 5:4 box + square cells keeps every image square at any screen size. */}
-          <div className="relative z-10 mx-auto flex gap-2 aspect-[5/4] w-full h-auto md:h-full md:w-auto max-w-full max-h-[380vh]">
+          {/* Square-card grid: 5 columns × 4 square rows. Full-width on mobile, centred
+              with side margins on desktop. The 5:4 box keeps every image square. */}
+          <div className="relative z-10 w-full md:mx-auto flex gap-2 aspect-[5/4] md:h-full md:w-auto max-w-full md:max-h-full">
             {galleryColumns.map((col, i) => (
               <div
                 key={i}
@@ -476,7 +490,7 @@ export default function About() {
 
           <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 md:gap-12 items-start">
             {/* Photo placeholder — swap with a real headshot */}
-            <div className="aspect-[4/5] rounded-xl bg-gradient-to-br from-white/90 to-white/60 flex items-center justify-center shrink-0">
+            <div className="aspect-[16/9] md:aspect-[4/5] rounded-xl bg-gradient-to-br from-white/90 to-white/60 flex items-center justify-center shrink-0">
               <span className="font-display font-bold text-6xl text-[#0a1a5c]/70">{t.initials}</span>
             </div>
 
