@@ -104,10 +104,15 @@ export default function LoadingScreen({ onComplete, ready = true }: LoadingScree
       className="fixed inset-0 z-[100] bg-black overflow-hidden"
       style={{ height: '100dvh' }}
     >
-      {/* VIDEO LAYER
-          Desktop: preload="auto" for instant playback.
-          Mobile:  preload="metadata" to avoid burning mobile data — progress bar
-          still starts because beginProgress fires after 1 s anyway. */}
+      {/* Branded fallback — always visible behind the video, so the splash shows
+          something instantly even on mobile where the video may still be buffering. */}
+      <div className="absolute inset-0 z-0 flex items-center justify-center bg-black">
+        <span className="font-display font-bold uppercase tracking-tight text-[#d8e6ff] text-[16vw] md:text-[12vw] leading-none animate-pulse">
+          Pamedia
+        </span>
+      </div>
+
+      {/* VIDEO LAYER — covers the fallback once it can play. */}
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-cover z-[1]"

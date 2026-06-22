@@ -320,7 +320,9 @@ export default function Home() {
                     src={isNeighbour ? b.video : undefined}
                     muted
                     playsInline
-                    preload="auto"
+                    /* Don't pull any reels during the splash (let the splash video load),
+                       then only the active reel on mobile to avoid flooding the connection. */
+                    preload={!loaded ? 'none' : isActive ? 'auto' : isMobile ? 'none' : 'metadata'}
                     poster={b.coverSm}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -439,8 +441,9 @@ export default function Home() {
       )}
 
       {/* Pre-buffer the active brand's first film (full quality) while the user is on the
-          stage, so it autoplays instantly the moment they open the project. */}
-      {loaded && project === null && (
+          stage, so it autoplays instantly the moment they open the project.
+          Desktop only — on mobile this full-quality download would flood the connection. */}
+      {loaded && project === null && !isMobile && (
         <video
           key={`warm-${active}`}
           src={brands[active]?.videos?.[0]?.src ?? brands[active]?.video}
