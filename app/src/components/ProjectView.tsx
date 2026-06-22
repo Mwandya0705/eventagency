@@ -84,6 +84,14 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
   const activeVideo = selectedVideoOverride !== null ? selectedVideoOverride : defaultVideo
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const [paused, setPaused] = useState(false)
+
+  const togglePlay = () => {
+    const v = videoRef.current
+    if (!v) return
+    if (v.paused) v.play().catch(() => {})
+    else v.pause()
+  }
 
   useEffect(() => {
     const v = videoRef.current
@@ -115,16 +123,35 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
       style={{ height: '100dvh' }}
       aria-hidden={!open}
     >
-      {/* Main player — covers the screen (full-bleed) like the reference */}
+      {/* Main player — covers the screen (full-bleed) like the reference.
+          No native controls (they render over the custom Back / arrows UI on mobile);
+          tap the video to play/pause instead. */}
       <video
         ref={videoRef}
         key={activeVideo || 'none'}
         src={activeVideo || undefined}
-        controls
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-cover object-center bg-black"
+        onClick={togglePlay}
+        onPlay={() => setPaused(false)}
+        onPause={() => setPaused(true)}
+        className="absolute inset-0 w-full h-full object-cover object-center bg-black cursor-pointer"
       />
+
+      {/* Center play affordance — only while paused */}
+      {open && paused && (
+        <button
+          onClick={togglePlay}
+          aria-label="Play"
+          className="absolute inset-0 z-[15] flex items-center justify-center"
+        >
+          <span className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="white" className="ml-0.5">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </span>
+        </button>
+      )}
 
       {/* Top gradient */}
       <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-10" />
@@ -143,25 +170,25 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
 
       {/* Title · arrows · meta — lower-center, like the reference */}
       <div className="absolute bottom-20 md:bottom-24 inset-x-0 z-20 flex flex-col items-center gap-3 px-6 drop-shadow-[0_2px_12px_rgba(0,0,0,0.9)]">
-        <div className="flex items-center justify-center gap-5 md:gap-8 w-full">
+        <div className="flex items-center justify-center gap-3 md:gap-8 w-full max-w-full">
           <button
             onClick={() => hasPrev && onNavigate(current - 1)}
             aria-label="Previous project"
             disabled={!hasPrev}
-            className={`text-3xl md:text-4xl leading-none transition-colors ${
+            className={`shrink-0 text-2xl md:text-4xl leading-none transition-colors ${
               hasPrev ? 'text-white/80 hover:text-white' : 'text-white/0 pointer-events-none'
             }`}
           >
             ‹
           </button>
-          <h2 className="font-display text-[12vw] md:text-5xl font-bold uppercase text-white tracking-wide leading-none text-center whitespace-nowrap">
+          <h2 className="font-display text-[8vw] md:text-5xl font-bold uppercase text-white tracking-wide leading-none text-center whitespace-nowrap min-w-0 truncate">
             {brand.name}
           </h2>
           <button
             onClick={() => hasNext && onNavigate(current + 1)}
             aria-label="Next project"
             disabled={!hasNext}
-            className={`text-3xl md:text-4xl leading-none transition-colors ${
+            className={`shrink-0 text-2xl md:text-4xl leading-none transition-colors ${
               hasNext ? 'text-white/80 hover:text-white' : 'text-white/0 pointer-events-none'
             }`}
           >
