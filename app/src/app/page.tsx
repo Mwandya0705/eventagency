@@ -215,12 +215,13 @@ export default function Home() {
       if (projectRef.current !== null) return
       const v = videoRefs.current[active]
       if (v) { v.currentTime = 0; v.play().catch(() => {}) }
-    }, 3000)
+    }, COVER_HOLD_MS)
 
-    // Fallback: hide cover after COVER_HOLD_MS even if onPlaying hasn't fired
+    // Keep the cover photo up until the reel is actually playing (onPlaying) so we never
+    // reveal a stuttering / still-buffering video. This is just a long safety fallback.
     const fallbackTimer = setTimeout(() => {
       setCoverVisible(false)
-    }, COVER_HOLD_MS)
+    }, COVER_HOLD_MS + 7000)
 
     return () => { clearTimeout(playTimer); clearTimeout(fallbackTimer) }
   }, [active, loaded])
@@ -317,11 +318,14 @@ export default function Home() {
                       Only attach src to active and adjacent cover videos to stay within iOS Safari's concurrent video player limit. */}
                   <video
                     ref={(el) => { videoRefs.current[i] = el }}
-                    src={isNeighbour ? b.video : undefined}
+                    /* Mobile: only the active reel gets a src (one decoder → no stutter on
+                       weak devices). Desktop: active + neighbours for instant switching. */
+                    src={(isMobile ? isActive : isNeighbour) ? b.video : undefined}
                     muted
+                    loop
                     playsInline
-                    /* Don't pull any reels during the splash (let the splash video load),
-                       then only the active reel on mobile to avoid flooding the connection. */
+                    /* No reels during the splash (let the splash load); then only the active
+                       reel on mobile to avoid flooding the connection. */
                     preload={!loaded ? 'none' : isActive ? 'auto' : isMobile ? 'none' : 'metadata'}
                     poster={b.coverSm}
                     onPlaying={() => { if (isActive) setCoverVisible(false) }}
