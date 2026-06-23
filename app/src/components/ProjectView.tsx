@@ -132,6 +132,9 @@ export default function ProjectView({ brands, index, onClose, onNavigate }: Proj
         src={activeVideo || undefined}
         playsInline
         preload="auto"
+        // Show the brand cover image while the reel buffers, so opening a
+        // project never flashes a black screen during the load.
+        poster={brand.coverLg || brand.coverSm}
         onClick={togglePlay}
         onPlay={() => setPaused(false)}
         onPause={() => setPaused(true)}

@@ -121,6 +121,15 @@ function useIsMobile() {
 export default function Home() {
   const isMobile = useIsMobile()
   const [loaded, setLoaded] = useState(false)
+  // The splash should play once per browser session. When the user navigates to
+  // another page and returns to the featured work, Home remounts — without this
+  // it would replay the splash. We check sessionStorage and skip straight to the
+  // reel (the landing's own slide transition handles the entrance).
+  const [splashChecked, setSplashChecked] = useState(false)
+  useEffect(() => {
+    if (sessionStorage.getItem('ef_splash_shown') === '1') setLoaded(true)
+    setSplashChecked(true)
+  }, [])
   const [imagesReady, setImagesReady] = useState(false)
   const [active, setActive] = useState(0)
   const [coverVisible, setCoverVisible] = useState(true)
@@ -272,8 +281,14 @@ export default function Home() {
 
   return (
     <>
-      {!loaded && (
-        <LoadingScreen ready={imagesReady} onComplete={() => setLoaded(true)} />
+      {splashChecked && !loaded && (
+        <LoadingScreen
+          ready={imagesReady}
+          onComplete={() => {
+            sessionStorage.setItem('ef_splash_shown', '1')
+            setLoaded(true)
+          }}
+        />
       )}
 
       {/* Landing — slides left when a project opens */}
